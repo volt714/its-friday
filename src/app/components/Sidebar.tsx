@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Sidebar() {
   return (
     <div className="w-16 lg:w-64 bg-white border-r flex-shrink-0 overflow-y-auto">
@@ -14,20 +16,20 @@ export default function Sidebar() {
         </div>
         <nav className="hidden lg:block space-y-4">
           <div>
-            <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+            <div className="text-xs text-gray-700 mb-2 flex items-center gap-1">
               <span>⭐</span>
               <span>Favorites</span>
             </div>
           </div>
           <div>
-            <div className="text-xs text-gray-500 mb-2 flex items-center gap-2">
+            <div className="text-xs text-gray-700 mb-2 flex items-center gap-2">
               <span>Workspaces</span>
-              <button className="text-gray-400 hover:text-gray-600">
+              <button className="text-gray-600 hover:text-gray-800">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              <button className="ml-auto text-gray-400 hover:text-gray-600">
+              <button className="ml-auto text-gray-600 hover:text-gray-800">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -36,23 +38,31 @@ export default function Sidebar() {
             <div className="space-y-1">
               <div className="flex items-center gap-2 p-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors cursor-pointer">
                 <div className="w-5 h-5 bg-yellow-400 rounded flex items-center justify-center text-xs font-bold text-white">M</div>
-                <span className="text-sm font-medium">Main workspace</span>
-                <button className="ml-auto text-gray-400 hover:text-gray-600">
+                <span className="text-sm font-medium text-gray-900">Main workspace</span>
+                <button className="ml-auto text-gray-600 hover:text-gray-800">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
               </div>
               <div className="ml-7 space-y-1">
-                <div className="flex items-center gap-2 p-1 bg-gray-100 rounded text-sm cursor-pointer">
+                <div className="flex items-center gap-2 p-1 bg-gray-100 rounded text-sm cursor-pointer text-gray-900">
                   <span className="text-blue-600">📊</span>
                   <span className="font-medium">my-work</span>
                 </div>
-                <div className="flex items-center gap-2 p-1 hover:bg-gray-50 rounded text-sm text-gray-600 cursor-pointer">
+                <div className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded text-sm text-gray-800 cursor-pointer">
                   <span>📈</span>
                   <span>Dashboard and reporting</span>
                 </div>
               </div>
+            </div>
+            <div className="mt-4">
+              <Link href="/users" className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded text-sm font-medium text-gray-800 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h-4v-2a3 3 0 00-3-3H6a3 3 0 00-3 3v2H0V10a2 2 0 012-2h20a2 2 0 012 2v10h-4zm-1-7a4 4 0 10-8 0 4 4 0 008 0z" />
+                </svg>
+                <span>User Management</span>
+              </Link>
             </div>
           </div>
         </nav>

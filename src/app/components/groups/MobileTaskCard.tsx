@@ -1,10 +1,10 @@
-import { getStatusColor } from '@/app/components/utils'
+import { getStatusColor, getStatusSelectBaseClasses, getOwnerBadgeColor, getDueDateTone, getDropdownTone } from '@/app/components/utils'
 import type { Task } from '@prisma/client'
 import { updateTask, deleteTask } from '@/app/actions'
 
 export default function MobileTaskCard({ task }: { task: Task }) {
   return (
-    <div className="border rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
+    <div className="border rounded-lg p-4 bg-white hover:shadow-md transition-shadow text-gray-900">
       <div className="flex items-start justify-between mb-3">
         <form action={async (formData: FormData) => {
           'use server'
@@ -13,7 +13,7 @@ export default function MobileTaskCard({ task }: { task: Task }) {
           <input
             name="title"
             defaultValue={task.title}
-            className="font-medium text-gray-900 bg-transparent border-none outline-none w-full focus:bg-gray-50 focus:px-2 focus:py-1 rounded transition-all"
+            className="font-medium bg-transparent border-none outline-none w-full focus:bg-gray-50 focus:px-2 focus:py-1 rounded transition-all placeholder-gray-500"
           />
         </form>
         <form action={async () => {
@@ -29,33 +29,33 @@ export default function MobileTaskCard({ task }: { task: Task }) {
       </div>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <label className="text-gray-500 text-xs block mb-1">Owner</label>
+          <label className="text-gray-700 text-xs block mb-1">Owner</label>
           <form action={async (formData: FormData) => {
             'use server'
             await updateTask(task.id, { owner: String(formData.get('owner') || '') })
           }}>
             {task.owner ? (
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-semibold ${getOwnerBadgeColor(task.owner)}`}>
                   {task.owner.charAt(0).toUpperCase()}
                 </div>
-                <input
+                 <input
                   name="owner"
                   defaultValue={task.owner}
-                  className="bg-transparent border-none outline-none flex-1 focus:bg-gray-50 focus:px-1 rounded text-sm"
+                   className="bg-transparent border-none outline-none flex-1 focus:bg-gray-50 focus:px-1 rounded text-sm"
                 />
               </div>
             ) : (
               <input
                 name="owner"
                 placeholder="Unassigned"
-                className="bg-transparent border-none outline-none w-full focus:bg-gray-50 focus:px-1 rounded text-gray-400 text-sm"
+                className="bg-transparent border-none outline-none w-full focus:bg-gray-50 focus:px-1 rounded text-gray-700 placeholder-gray-500 text-sm"
               />
             )}
           </form>
         </div>
         <div>
-          <label className="text-gray-500 text-xs block mb-1">Status</label>
+          <label className="text-gray-700 text-xs block mb-1">Status</label>
           <form action={async (formData: FormData) => {
             'use server'
             await updateTask(task.id, { status: String(formData.get('status')) as any })
@@ -63,7 +63,7 @@ export default function MobileTaskCard({ task }: { task: Task }) {
             <select
               name="status"
               defaultValue={task.status as any}
-              className={`rounded px-2 py-1 text-xs font-medium border-none outline-none cursor-pointer w-full ${getStatusColor(task.status)}`}
+              className={`${getStatusSelectBaseClasses()} text-xs cursor-pointer w-full ${getStatusColor(task.status)}`}
             >
               <option value="WORKING_ON_IT">Working on it</option>
               <option value="DONE">Done</option>
@@ -73,7 +73,7 @@ export default function MobileTaskCard({ task }: { task: Task }) {
           </form>
         </div>
         <div>
-          <label className="text-gray-500 text-xs block mb-1">Due date</label>
+          <label className="text-gray-700 text-xs block mb-1">Due date</label>
           <form action={async (formData: FormData) => {
             'use server'
             const v = String(formData.get('dueDate') || '')
@@ -83,12 +83,12 @@ export default function MobileTaskCard({ task }: { task: Task }) {
               name="dueDate"
               type="date"
               defaultValue={task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 10) : ''}
-              className="bg-transparent border-none outline-none focus:bg-gray-50 focus:px-1 rounded text-sm w-full"
+              className={`bg-transparent border-none outline-none focus:bg-gray-50 focus:px-1 rounded text-sm w-full ${getDueDateTone(task.dueDate as any)}`}
             />
           </form>
         </div>
         <div>
-          <label className="text-gray-500 text-xs block mb-1">Dropdown</label>
+          <label className="text-gray-700 text-xs block mb-1">Dropdown</label>
           <form action={async (formData: FormData) => {
             'use server'
             await updateTask(task.id, { dropdown: String(formData.get('dropdown') || '') })
@@ -97,7 +97,7 @@ export default function MobileTaskCard({ task }: { task: Task }) {
               name="dropdown"
               defaultValue={task.dropdown ?? ''}
               placeholder="Add value"
-              className="bg-transparent border-none outline-none w-full focus:bg-gray-50 focus:px-1 rounded text-gray-400 text-sm"
+              className={`bg-transparent border-none outline-none w-full focus:bg-gray-50 focus:px-1 rounded text-sm ${getDropdownTone(task.dropdown)}`}
             />
           </form>
         </div>

@@ -11,6 +11,11 @@ export default async function Home() {
     orderBy: { order: 'asc' },
     include: { tasks: { orderBy: { id: 'asc' } } },
   })
+  let users: { id: number; name: string }[] = []
+  const userClient = (prisma as any).user
+  if (userClient?.findMany) {
+    users = await userClient.findMany({ select: { id: true, name: true } })
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -21,7 +26,7 @@ export default async function Home() {
           <ProjectHeader />
           <ActionBar />
           <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-            <GroupsBoard groups={groups} />
+            <GroupsBoard groups={groups} users={users} />
           </div>
         </div>
       </div>

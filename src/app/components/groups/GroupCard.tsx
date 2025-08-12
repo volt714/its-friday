@@ -1,41 +1,30 @@
-import { getGroupColor } from '@/app/components/utils'
+import { getGroupColor, getGroupColorSet } from '@/app/components/utils'
 import type { Group, Task } from '@prisma/client'
 import TaskRow from './TaskRow'
 import MobileTaskCard from './MobileTaskCard'
 import { createTask, deleteGroup } from '@/app/actions'
 import ConfirmSubmitButton from '@/app/components/common/ConfirmSubmitButton'
+import DeleteGroupButton from './DeleteGroupButton'
 import ToggleInputButton from '@/app/components/common/ToggleInputButton'
 import AddTaskInput from '@/app/components/common/AddTaskInput'
 
-export default function GroupCard({ group, index }: { group: Group & { tasks: Task[] }; index: number }) {
+export default function GroupCard({ group, index, users = [] }: { group: Group & { tasks: Task[] }; index: number; users?: { id: number; name: string }[] }) {
   const toggleId = `add-task-${group.id}`
+  const colorSet = getGroupColorSet(index)
   return (
-    <div className={`bg-white rounded-lg ${getGroupColor(index)} border-l-4 overflow-hidden shadow-sm`}>
-      <div className="flex items-center justify-between px-4 lg:px-6 py-3 bg-gray-50/50 border-b">
+    <div className={`bg-white rounded-lg ${colorSet.border} border-l-4 overflow-hidden shadow-sm text-gray-900`}>
+      <div className={`flex items-center justify-between px-4 lg:px-6 py-3 ${colorSet.bg} border-b`}>
         <div className="flex items-center gap-3">
-          <button className="text-gray-400 hover:text-gray-600 transition-colors">
+          <button className="text-gray-700 hover:text-gray-900 transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          <h3 className="font-semibold text-gray-900">{group.name}</h3>
-          <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">{group.tasks.length}</span>
-          <form
-            action={async () => {
-              'use server'
-              await deleteGroup(group.id)
-            }}
-            className="ml-2"
-          >
-            <ConfirmSubmitButton
-              confirmMessage={`Are you sure you want to delete "${group.name}" group and all its tasks?`}
-              className="text-red-500 hover:text-red-700 text-xs p-1 hover:bg-red-50 rounded transition-colors"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </ConfirmSubmitButton>
-          </form>
+          <h3 className={`font-semibold ${colorSet.text}`}>{group.name}</h3>
+          <span className={`text-xs px-2 py-0.5 rounded ${colorSet.text} ${colorSet.bg}`}>{group.tasks.length}</span>
+          <div className="ml-2">
+            <DeleteGroupButton groupId={group.id} groupName={group.name} />
+          </div>
         </div>
         <form
           action={async (formData: FormData) => {
@@ -51,7 +40,7 @@ export default function GroupCard({ group, index }: { group: Group & { tasks: Ta
           }}
           className="hidden lg:flex gap-2 items-center"
         >
-          <ToggleInputButton targetId={toggleId} className="text-gray-400 hover:text-gray-600 text-sm flex items-center gap-2 transition-colors">
+          <ToggleInputButton targetId={toggleId} className="text-gray-700 hover:text-gray-900 text-sm flex items-center gap-2 transition-colors">
             <span className="text-lg">+</span>
             <span>Add task</span>
           </ToggleInputButton>
@@ -61,7 +50,7 @@ export default function GroupCard({ group, index }: { group: Group & { tasks: Ta
 
       <div className="overflow-x-auto">
         <div className="hidden lg:block">
-          <div className="grid grid-cols-12 gap-4 px-6 py-2 bg-white border-b text-sm font-medium text-gray-500">
+          <div className="grid grid-cols-12 gap-4 px-6 py-2 bg-white border-b text-sm font-medium text-gray-800">
             <div className="col-span-4">Task</div>
             <div className="col-span-2">Owner</div>
             <div className="col-span-2">Status</div>
@@ -71,7 +60,7 @@ export default function GroupCard({ group, index }: { group: Group & { tasks: Ta
           </div>
           <div className="divide-y">
             {group.tasks.map((task) => (
-              <TaskRow key={task.id} task={task} />
+              <TaskRow key={task.id} task={task} users={users} />
             ))}
           </div>
         </div>
