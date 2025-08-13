@@ -1,9 +1,18 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { PrismaClient } = require('@prisma/client')
+const crypto = require('crypto')
 
 const prisma = new PrismaClient()
 
 async function main() {
+  // Ensure default developer exists
+  const devUsername = 'develop123'
+  const dev = await prisma.user.findFirst({ where: { name: devUsername } })
+  if (!dev) {
+    const passwordHash = crypto.createHash('sha256').update('Test123').digest('hex')
+    await prisma.user.create({ data: { name: devUsername, email: 'developer@example.com', role: 'DEVELOPER', passwordHash } })
+  }
+
   const existing = await prisma.group.count()
   if (existing > 0) return
 

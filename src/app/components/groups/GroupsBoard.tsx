@@ -9,6 +9,7 @@ type TaskLite = {
   owner: string | null
   ownerId: number | null
   status: Status
+  startDate: string | Date | null
   dueDate: string | Date | null
   dropdown: string | null
 }
@@ -19,15 +20,15 @@ type GroupWithTasks = {
   tasks: TaskLite[]
 }
 
-export default function GroupsBoard({ groups, users = [] }: { groups: GroupWithTasks[]; users?: { id: number; name: string }[] }) {
+export default function GroupsBoard({ groups, users = [], canManage = false }: { groups: GroupWithTasks[]; users?: { id: number; name: string }[]; canManage?: boolean }) {
   return (
     <div className="space-y-4">
       {/* Render each group with a deterministic color set based on its index */}
       {groups.map((group, index) => (
-        <GroupCard key={group.id} group={group} index={index} users={users} />
+        <GroupCard key={group.id} group={group} index={index} users={users} canManage={canManage} />
       ))}
       {/* Card for creating a new group */}
-      <AddNewGroupCard />
+      {canManage && <AddNewGroupCard />}
     </div>
   )
 }

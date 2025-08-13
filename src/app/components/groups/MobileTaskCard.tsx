@@ -3,7 +3,7 @@ import type { Task } from '@prisma/client'
 import { updateTask, deleteTask } from '@/app/actions'
 
 // MobileTaskCard renders a compact editable view of a task for small screens
-export default function MobileTaskCard({ task }: { task: Task }) {
+export default function MobileTaskCard({ task, canEditCore = false }: { task: Task; canEditCore?: boolean }) {
   return (
     <div className="border rounded-lg p-4 bg-white hover:shadow-md transition-shadow text-gray-900">
       {/* Title and delete button */}
@@ -15,14 +15,17 @@ export default function MobileTaskCard({ task }: { task: Task }) {
           <input
             name="title"
             defaultValue={task.title}
-            className="font-medium bg-transparent border-none outline-none w-full focus:bg-gray-50 focus:px-2 focus:py-1 rounded transition-all placeholder-gray-500"
+            disabled={!canEditCore}
+            className={`font-medium bg-transparent border-none outline-none w-full rounded transition-all placeholder-gray-500 ${
+              canEditCore ? 'focus:bg-gray-50 focus:px-2 focus:py-1' : 'cursor-not-allowed opacity-70'
+            }`}
           />
         </form>
         <form action={async () => {
           'use server'
           await deleteTask(task.id)
         }}>
-          <button className="text-red-500 hover:text-red-700 ml-2">
+          <button className="text-red-500 hover:text-red-700 ml-2" disabled={!canEditCore}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
@@ -30,7 +33,23 @@ export default function MobileTaskCard({ task }: { task: Task }) {
         </form>
       </div>
       {/* Editable fields */}
-      <div className="grid grid-cols-2 gap-4 text-sm">
+      <div className="grid grid-cols-3 gap-4 text-sm">
+        <div>
+          <label className="text-gray-700 text-xs block mb-1">Start date</label>
+          <form action={async (formData: FormData) => {
+            'use server'
+            const v = String(formData.get('startDate') || '')
+            await updateTask(task.id, { startDate: v })
+          }}>
+            <input
+              name="startDate"
+              type="date"
+              defaultValue={task.startDate ? new Date(task.startDate).toISOString().slice(0, 10) : ''}
+              disabled={!canEditCore}
+              className={`bg-transparent border-none outline-none rounded text-sm w-full ${canEditCore ? 'focus:bg-gray-50 focus:px-1' : 'cursor-not-allowed opacity-70'}`}
+            />
+          </form>
+        </div>
         <div>
           <label className="text-gray-700 text-xs block mb-1">Owner</label>
           <form action={async (formData: FormData) => {
@@ -45,14 +64,16 @@ export default function MobileTaskCard({ task }: { task: Task }) {
                  <input
                   name="owner"
                   defaultValue={task.owner}
-                   className="bg-transparent border-none outline-none flex-1 focus:bg-gray-50 focus:px-1 rounded text-sm"
+                   disabled={!canEditCore}
+                   className={`bg-transparent border-none outline-none flex-1 rounded text-sm ${canEditCore ? 'focus:bg-gray-50 focus:px-1' : 'cursor-not-allowed opacity-70'}`}
                 />
               </div>
             ) : (
               <input
                 name="owner"
                 placeholder="Unassigned"
-                className="bg-transparent border-none outline-none w-full focus:bg-gray-50 focus:px-1 rounded text-gray-700 placeholder-gray-500 text-sm"
+                disabled={!canEditCore}
+                className={`bg-transparent border-none outline-none w-full rounded text-gray-700 placeholder-gray-500 text-sm ${canEditCore ? 'focus:bg-gray-50 focus:px-1' : 'cursor-not-allowed opacity-70'}`}
               />
             )}
           </form>
@@ -67,6 +88,7 @@ export default function MobileTaskCard({ task }: { task: Task }) {
               name="status"
               defaultValue={task.status as any}
               className={`${getStatusSelectBaseClasses()} text-xs cursor-pointer w-full ${getStatusColor(task.status)}`}
+              disabled={!canEditCore}
             >
               <option value="WORKING_ON_IT">Working on it</option>
               <option value="DONE">Done</option>
@@ -86,7 +108,8 @@ export default function MobileTaskCard({ task }: { task: Task }) {
               name="dueDate"
               type="date"
               defaultValue={task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 10) : ''}
-              className={`bg-transparent border-none outline-none focus:bg-gray-50 focus:px-1 rounded text-sm w-full ${getDueDateTone(task.dueDate as any)}`}
+              disabled={!canEditCore}
+              className={`bg-transparent border-none outline-none rounded text-sm w-full ${getDueDateTone(task.dueDate as any)} ${canEditCore ? 'focus:bg-gray-50 focus:px-1' : 'cursor-not-allowed opacity-70'}`}
             />
           </form>
         </div>
@@ -100,7 +123,8 @@ export default function MobileTaskCard({ task }: { task: Task }) {
               name="dropdown"
               defaultValue={task.dropdown ?? ''}
               placeholder="Add value"
-              className={`bg-transparent border-none outline-none w-full focus:bg-gray-50 focus:px-1 rounded text-sm ${getDropdownTone(task.dropdown)}`}
+              disabled={!canEditCore}
+              className={`bg-transparent border-none outline-none w-full rounded text-sm ${getDropdownTone(task.dropdown)} ${canEditCore ? 'focus:bg-gray-50 focus:px-1' : 'cursor-not-allowed opacity-70'}`}
             />
           </form>
         </div>

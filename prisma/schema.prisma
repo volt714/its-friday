@@ -16,6 +16,12 @@ enum Status {
   STUCK
 }
 
+enum Role {
+  DEVELOPER
+  ADMIN
+  USER
+}
+
 model Group {
   id        Int      @id @default(autoincrement())
   name      String
@@ -32,10 +38,13 @@ model Task {
   ownerId   Int?    // FK to User
   ownerUser User?   @relation("UserTasks", fields: [ownerId], references: [id])
   status    Status   @default(NOT_STARTED)
+  startDate DateTime? // Date when task was assigned to someone
   dueDate   DateTime?
   dropdown  String?
   groupId   Int
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  assignees TaskAssignee[]
+  messages  TaskMessage[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -45,9 +54,33 @@ model User {
   name      String
   email     String?  @unique
   avatar    String?
+  role      Role     @default(USER)
+  passwordHash String?
   tasks     Task[]  @relation("UserTasks")
+  assignedTasks TaskAssignee[]
+  taskMessages TaskMessage[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model TaskAssignee {
+  taskId   Int
+  userId   Int
+  task     Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([taskId, userId])
+}
+
+model TaskMessage {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  userId    Int
+  body      String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 

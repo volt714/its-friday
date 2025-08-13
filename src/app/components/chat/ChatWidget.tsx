@@ -4,9 +4,11 @@ import { useState } from 'react'
 
 // ChatWidget is a purely client-side demo widget that toggles a floating chat panel
 export default function ChatWidget() {
+  // Local open/close state for the floating chat widget
   const [open, setOpen] = useState(false)
   return (
     <div className="fixed bottom-6 right-6 z-50">
+      {/* Floating container holding the toggle and panel */}
       <div className="chat-container" style={{ position: 'relative' }}>
         {/* Toggle button */}
         <button

@@ -2,12 +2,13 @@
 
 // ToggleInputButton shows/hides a target input by element id and focuses it when shown
 
-export default function ToggleInputButton({ targetId, children, className }: { targetId: string; children: React.ReactNode; className?: string }) {
+export default function ToggleInputButton({ targetId, children, className, disabled = false }: { targetId: string; children: React.ReactNode; className?: string; disabled?: boolean }) {
   return (
     <button
       type="button"
-      className={className}
+      className={`${className ?? ''} ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
       onClick={() => {
+        if (disabled) return
         const input = document.getElementById(targetId) as HTMLInputElement | null
         if (input) {
           // Toggle display style between none/block
@@ -18,6 +19,7 @@ export default function ToggleInputButton({ targetId, children, className }: { t
           input.focus()
         }
       }}
+      disabled={disabled}
     >
       {children}
     </button>

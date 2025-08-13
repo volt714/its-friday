@@ -13,12 +13,14 @@ export default function OwnerField({
   ownerId,
   users,
   size = 'md',
+  canManageOwners = false,
 }: {
   taskId: number
   owner: string | null
   ownerId: number | null
   users: SimpleUser[]
   size?: 'sm' | 'md'
+  canManageOwners?: boolean
 }) {
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
@@ -52,14 +54,15 @@ export default function OwnerField({
 
   return (
     <div className="flex items-center gap-2 relative">
-      {currentName ? (
+      {/*currentName ? (
         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold ${getOwnerBadgeColor(currentName)}`}>
           {currentName.charAt(0).toUpperCase()}
         </div>
       ) : (
         <div className="w-6 h-6 rounded-full bg-gray-200" />
-      )}
-      <select
+      )*/}
+      {/*owner name dropdown*/}
+           <select
         className={`border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200 ${sizeClasses}`}
         value={value}
         onChange={(e) => {
@@ -69,10 +72,12 @@ export default function OwnerField({
             await updateTask(taskId, {
               ownerId: selectedId || null,
               owner: selectedUser?.name ?? null,
+              // Set start date when someone is assigned (if not already set)
+              startDate: selectedId ? new Date().toISOString().slice(0, 10) : null,
             } as any)
           })
         }}
-        disabled={isPending}
+        disabled={isPending || !canManageOwners}
       >
         <option value={0}>Unassigned</option>
         {users.map((u) => (
@@ -83,19 +88,20 @@ export default function OwnerField({
       </select>
 
       {/* Toolbar trigger to manage users */}
-      <button
+     {/* <button
         ref={buttonRef}
         type="button"
         className="p-1 rounded hover:bg-gray-100 text-gray-700"
         title="Manage owners"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => canManageOwners && setOpen((v) => !v)}
+        disabled={!canManageOwners}
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A3 3 0 017 17h10a3 3 0 011.879.804L21 20H3l2.121-2.196zM12 3a5 5 0 00-5 5v2a5 5 0 005 5 5 5 0 005-5V8a5 5 0 00-5-5z" />
         </svg>
-      </button>
+      </button>*/}
 
-      {open && createPortal(
+      {open && canManageOwners && createPortal(
         <div className="absolute z-50 w-72 bg-white border rounded-lg shadow-lg p-3" style={popoverStyle}>
           <div className="flex items-center justify-between mb-2">
             <div className="font-medium text-gray-900 text-sm">Owners</div>

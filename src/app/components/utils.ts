@@ -1,3 +1,4 @@
+// Shared UI utilities and types for statuses, groups, and priorities
 import React from 'react';
 
 // UI utilities, types, and components for statuses, groups, and priorities used across the app

@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react';
+import { impersonateUserAction, signOutAction } from '@/app/actions'
 import { Menu } from 'lucide-react'
 
 // TopNav renders the site header with brand, global actions, and user menu
@@ -47,7 +48,8 @@ const InviteIcon = () => (
   </svg>
 );
 
-export default function TopNav() {
+export default function TopNav({ users = [] as { id: number; name: string }[], canImpersonate = false }: { users?: { id: number; name: string }[]; canImpersonate?: boolean }) {
+  // Sticky header with brand, global actions, and profile controls
   return (
     <header className="bg-white border-b px-4 py-3 shadow-sm z-50 sticky top-0">
       <div className="flex items-center justify-between w-full max-w-screen-2xl mx-auto">
@@ -136,13 +138,20 @@ export default function TopNav() {
           {/* Divider */}
           <div className="w-px h-6 bg-gray-200 mx-2"></div>
 
-          {/* Profile Avatar */}
-          <button 
-            className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-sm font-semibold cursor-pointer hover:from-red-600 hover:to-red-700 transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            title="Profile menu"
-          >
-            D
-          </button>
+          {/* Impersonate (demo) */}
+          {canImpersonate && (
+            <form action={impersonateUserAction} className="flex items-center gap-2">
+              <select name="uid" className="border rounded px-2 py-1 text-xs text-gray-700">
+                {users.map(u => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </select>
+              <button type="submit" className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">Switch</button>
+            </form>
+          )}
+          <form action={signOutAction}>
+            <button className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">Sign out</button>
+          </form>
         </div>
       </div>
     </header>
