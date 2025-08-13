@@ -1,16 +1,29 @@
-"use client"; // This directive marks the component as a Client Component
+"use client"; // Client Component to enable interactivity and form actions
 
 import { useState } from 'react';
-import type { Task } from '@prisma/client';
-import { updateTask, deleteTask } from '@/app/actions'; // Assuming these actions are correctly defined
-import { getOwnerBadgeColor, getDueDateTone, getDropdownTone, getStatusSelectBaseClasses } from '@/app/components/utils'; // Assuming these utility functions provide appropriate Tailwind classes
+import { updateTask, deleteTask } from '@/app/actions'; // Server actions for updating/deleting tasks
+import { getDueDateTone, getDropdownTone, getStatusSelectBaseClasses } from '@/app/components/utils'; // Tailwind class helpers
 import OwnerField from './OwnerField'
 import type { SimpleUser } from './OwnerField'
 
-export default function TaskRow({ task, users = [] }: { task: Task; users?: SimpleUser[] }) {
+type Status = 'WORKING_ON_IT' | 'DONE' | 'NOT_STARTED' | 'STUCK'
+
+// Minimal task shape used by this row component
+type TaskLike = {
+  id: number
+  title: string
+  owner: string | null
+  ownerId?: number | null
+  status: Status
+  dueDate?: Date | string | null
+  dropdown?: string | null
+}
+
+// TaskRow renders a single editable task line in the desktop table layout
+export default function TaskRow({ task, users = [] }: { task: TaskLike; users?: SimpleUser[] }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Function to handle form submission for updating the task title
+  // Update task title on submit
   const handleTitleSubmit = async (formData: FormData) => {
     // 'use server'; <-- REMOVED: This directive should not be here
     const newTitle = String(formData.get('title') || '');
@@ -19,7 +32,7 @@ export default function TaskRow({ task, users = [] }: { task: Task; users?: Simp
     }
   };
 
-  // Function to handle form submission for updating the task owner
+  // Update owner string (legacy field) on submit
   const handleOwnerSubmit = async (formData: FormData) => {
     // 'use server'; <-- REMOVED
     const newOwner = String(formData.get('owner') || '');
@@ -28,16 +41,16 @@ export default function TaskRow({ task, users = [] }: { task: Task; users?: Simp
     }
   };
 
-  // Function to handle form submission for updating the task status
+  // Update status on submit
   const handleStatusSubmit = async (formData: FormData) => {
     // 'use server'; <-- REMOVED
-    const newStatus = String(formData.get('status')) as Task['status'];
+    const newStatus = String(formData.get('status')) as Status;
     if (newStatus !== task.status) { // Only update if changed
       await updateTask(task.id, { status: newStatus });
     }
   };
 
-  // Function to handle form submission for updating the task due date
+  // Update due date on submit; normalize to yyyy-mm-dd string for comparison
   const handleDueDateSubmit = async (formData: FormData) => {
     // 'use server'; <-- REMOVED
     const newDueDate = String(formData.get('dueDate') || '');
@@ -48,7 +61,7 @@ export default function TaskRow({ task, users = [] }: { task: Task; users?: Simp
     }
   };
 
-  // Function to handle form submission for updating the task dropdown field
+  // Update custom dropdown field on submit
   const handleDropdownSubmit = async (formData: FormData) => {
     // 'use server'; <-- REMOVED
     const newDropdown = String(formData.get('dropdown') || '');
@@ -57,15 +70,15 @@ export default function TaskRow({ task, users = [] }: { task: Task; users?: Simp
     }
   };
 
-  // Function to handle the actual task deletion
+  // Delete task after confirmation
   const handleDeleteTask = async () => {
     // 'use server'; <-- REMOVED
     await deleteTask(task.id);
     setShowDeleteConfirm(false); // Close the modal after deletion
   };
 
-  // Determine the status color based on the task status, matching the image provided
-  const getStatusDisplayColorClass = (status: Task['status']) => {
+  // Compute status color classes for select control
+  const getStatusDisplayColorClass = (status: Status) => {
     switch (status) {
       case 'WORKING_ON_IT':
         return 'bg-green-500 text-white'; // Green for 'Working on it'
@@ -82,7 +95,7 @@ export default function TaskRow({ task, users = [] }: { task: Task; users?: Simp
 
   return (
     <>
-      <div className="grid grid-cols-12 gap-4 px-6 py-3 hover:bg-gray-50 items-center group transition-colors text-gray-900">
+      <div className="grid grid-cols-12 gap-3 px-6 py-3 hover:bg-gray-50 items-center group transition-colors text-gray-900">
         {/* Task Title Section */}
         <div className="col-span-4 flex items-center gap-2">
           {/* Action Buttons (Star and Comment) - visible on hover */}
@@ -109,8 +122,7 @@ export default function TaskRow({ task, users = [] }: { task: Task; users?: Simp
             <input
               name="title"
               defaultValue={task.title}
-              className="bg-transparent border-none outline-none w-full placeholder-gray-400
-                         focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:px-2 focus:py-1 rounded-md transition-all text-gray-800"
+              className="bg-transparent border-none outline-none w-full placeholder-gray-400 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:px-2 focus:py-1 rounded-md transition-all text-gray-900 text-[15px]"
               onBlur={(e) => e.target.form?.requestSubmit()} // Submit on blur
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -135,8 +147,7 @@ export default function TaskRow({ task, users = [] }: { task: Task; users?: Simp
               name="status"
               defaultValue={task.status}
               // Dynamically apply color based on status, explicitly matching the image
-              className={`${getStatusSelectBaseClasses()} cursor-pointer appearance-none transition-all
-                         ${getStatusDisplayColorClass(task.status)}`}
+              className={`${getStatusSelectBaseClasses()} cursor-pointer appearance-none transition-all ${getStatusDisplayColorClass(task.status)} text-sm`}
               onChange={(e) => e.target.form?.requestSubmit()} // Submit on change
             >
               <option value="WORKING_ON_IT">Working on it</option>

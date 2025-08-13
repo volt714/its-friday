@@ -1,5 +1,5 @@
-import { getGroupColor, getGroupColorSet } from '@/app/components/utils'
-import type { Group, Task } from '@prisma/client'
+import { getGroupColorSet } from '@/app/components/utils'
+import type { Status } from '@/app/components/utils'
 import TaskRow from './TaskRow'
 import MobileTaskCard from './MobileTaskCard'
 import { createTask, deleteGroup } from '@/app/actions'
@@ -8,12 +8,30 @@ import DeleteGroupButton from './DeleteGroupButton'
 import ToggleInputButton from '@/app/components/common/ToggleInputButton'
 import AddTaskInput from '@/app/components/common/AddTaskInput'
 
-export default function GroupCard({ group, index, users = [] }: { group: Group & { tasks: Task[] }; index: number; users?: { id: number; name: string }[] }) {
+// GroupCard displays a group header, its task list (desktop and mobile variants), and quick add-task controls
+type TaskLite = {
+  id: number
+  title: string
+  owner: string | null
+  ownerId: number | null
+  status: Status
+  dueDate: string | Date | null
+  dropdown: string | null
+}
+
+type GroupWithTasks = {
+  id: number
+  name: string
+  tasks: TaskLite[]
+}
+
+export default function GroupCard({ group, index, users = [] }: { group: GroupWithTasks; index: number; users?: { id: number; name: string }[] }) {
   const toggleId = `add-task-${group.id}`
   const colorSet = getGroupColorSet(index)
   return (
-    <div className={`bg-white rounded-lg ${colorSet.border} border-l-4 overflow-hidden shadow-sm text-gray-900`}>
-      <div className={`flex items-center justify-between px-4 lg:px-6 py-3 ${colorSet.bg} border-b`}>
+    <div className={`bg-white rounded-lg ${colorSet.border} border-l-4 overflow-hidden shadow-sm text-gray-900`}> 
+      {/* Header: group name, count, and actions */}
+      <div className={`flex items-center justify-between px-4 lg:px-6 py-3 ${colorSet.bg} border-b`}> 
         <div className="flex items-center gap-3">
           <button className="text-gray-700 hover:text-gray-900 transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,6 +58,7 @@ export default function GroupCard({ group, index, users = [] }: { group: Group &
           }}
           className="hidden lg:flex gap-2 items-center"
         >
+          {/* Toggle quick input row for adding a task (desktop only) */}
           <ToggleInputButton targetId={toggleId} className="text-gray-700 hover:text-gray-900 text-sm flex items-center gap-2 transition-colors">
             <span className="text-lg">+</span>
             <span>Add task</span>
@@ -49,8 +68,9 @@ export default function GroupCard({ group, index, users = [] }: { group: Group &
       </div>
 
       <div className="overflow-x-auto">
-        <div className="hidden lg:block">
-          <div className="grid grid-cols-12 gap-4 px-6 py-2 bg-white border-b text-sm font-medium text-gray-800">
+        {/* Desktop table layout */}
+        <div className="hidden lg:block min-w-[920px]">
+          <div className="grid grid-cols-12 gap-3 px-6 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-700 tracking-normal">
             <div className="col-span-4">Task</div>
             <div className="col-span-2">Owner</div>
             <div className="col-span-2">Status</div>
@@ -59,18 +79,20 @@ export default function GroupCard({ group, index, users = [] }: { group: Group &
             <div className="col-span-1"></div>
           </div>
           <div className="divide-y">
-            {group.tasks.map((task) => (
-              <TaskRow key={task.id} task={task} users={users} />
+            {group.tasks.map((task: TaskLite) => (
+              <TaskRow key={task.id} task={task as any} users={users} />
             ))}
           </div>
         </div>
+        {/* Mobile card layout */}
         <div className="lg:hidden space-y-2 p-4">
-          {group.tasks.map((t) => (
-            <MobileTaskCard key={t.id} task={t} />
+          {group.tasks.map((t: TaskLite) => (
+            <MobileTaskCard key={t.id} task={t as any} />
           ))}
         </div>
       </div>
 
+      {/* Bottom quick add row (visible on all breakpoints) */}
       <div className="px-6 py-3 border-t bg-gray-50/30">
         <form
           action={async (formData: FormData) => {

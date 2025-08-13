@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { createUserAction, deleteUserAction } from "@/app/actions";
 import { revalidatePath } from "next/cache";
 
+// UserManagementPage lists users and provides simple form actions to add or delete users
 export default async function UserManagementPage() {
   let users: { id: number; name: string; email: string | null; createdAt: Date }[] = [];
   const userClient = (prisma as any).user;
@@ -24,6 +25,7 @@ export default async function UserManagementPage() {
           await createUserAction(formData);
           revalidatePath("/users");
         }} className="space-y-4">
+          {/* Name field */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
             <input
@@ -35,6 +37,7 @@ export default async function UserManagementPage() {
               placeholder="John Doe"
             />
           </div>
+          {/* Optional email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email (Optional)</label>
             <input

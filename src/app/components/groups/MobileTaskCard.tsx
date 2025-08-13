@@ -2,9 +2,11 @@ import { getStatusColor, getStatusSelectBaseClasses, getOwnerBadgeColor, getDueD
 import type { Task } from '@prisma/client'
 import { updateTask, deleteTask } from '@/app/actions'
 
+// MobileTaskCard renders a compact editable view of a task for small screens
 export default function MobileTaskCard({ task }: { task: Task }) {
   return (
     <div className="border rounded-lg p-4 bg-white hover:shadow-md transition-shadow text-gray-900">
+      {/* Title and delete button */}
       <div className="flex items-start justify-between mb-3">
         <form action={async (formData: FormData) => {
           'use server'
@@ -27,6 +29,7 @@ export default function MobileTaskCard({ task }: { task: Task }) {
           </button>
         </form>
       </div>
+      {/* Editable fields */}
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <label className="text-gray-700 text-xs block mb-1">Owner</label>

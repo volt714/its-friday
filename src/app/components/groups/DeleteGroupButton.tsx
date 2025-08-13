@@ -1,6 +1,7 @@
 import ConfirmSubmitButton from '@/app/components/common/ConfirmSubmitButton'
 import { deleteGroup } from '@/app/actions'
 
+// DeleteGroupButton wraps a server action with a confirmation UX for safety
 export default function DeleteGroupButton({
   groupId,
   groupName,

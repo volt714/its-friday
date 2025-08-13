@@ -43,7 +43,7 @@ model Task {
 model User {
   id        Int      @id @default(autoincrement())
   name      String
-  email     String  @unique
+  email     String?  @unique
   avatar    String?
   tasks     Task[]  @relation("UserTasks")
   createdAt DateTime @default(now())

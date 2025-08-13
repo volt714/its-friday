@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 
+// ChatWidget is a purely client-side demo widget that toggles a floating chat panel
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
   return (
     <div className="fixed bottom-6 right-6 z-50">
       <div className="chat-container" style={{ position: 'relative' }}>
+        {/* Toggle button */}
         <button
           className="chat-toggle bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 transform hover:scale-110"
           onClick={() => setOpen((v) => !v)}
@@ -17,6 +19,7 @@ export default function ChatWidget() {
         </button>
         {open && (
           <div className="chat-box fixed bottom-20 right-0 w-80 h-96 bg-white rounded-lg shadow-2xl border flex-col">
+            {/* Header */}
             <div className="bg-blue-600 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
@@ -28,6 +31,7 @@ export default function ChatWidget() {
                 </svg>
               </button>
             </div>
+            {/* Messages (static demo content) */}
             <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50">
               <div className="flex items-start gap-2">
                 <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">A</div>
@@ -63,6 +67,7 @@ export default function ChatWidget() {
                 </div>
               </div>
             </div>
+            {/* Composer */}
             <div className="border-t p-3">
               <div className="flex items-center gap-2">
                 <input
@@ -86,6 +91,7 @@ export default function ChatWidget() {
               </div>
             </div>
             <style jsx>{`
+              /* Responsive full-screen chat on small screens and custom scrollbars */
               @media (max-width: 640px) {
                 .chat-box { width: 100vw !important; height: 100vh !important; bottom: 0 !important; right: 0 !important; border-radius: 0 !important; }
                 .chat-box .rounded-t-lg { border-radius: 0 !important; }

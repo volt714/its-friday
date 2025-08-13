@@ -5,6 +5,7 @@ declare global {
   var prismaGlobal: PrismaClient | undefined
 }
 
+// Export a singleton PrismaClient in development to avoid exhausting database connections
 export const prisma: PrismaClient =
   global.prismaGlobal ?? new PrismaClient({ log: ['query', 'error', 'warn'] })
 

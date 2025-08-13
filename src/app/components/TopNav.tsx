@@ -1,5 +1,9 @@
-import React from 'react';
+"use client"
 
+import React from 'react';
+import { Menu } from 'lucide-react'
+
+// TopNav renders the site header with brand, global actions, and user menu
 // Icon components for better organization and reusability
 const ShareIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,7 +52,18 @@ export default function TopNav() {
     <header className="bg-white border-b px-4 py-3 shadow-sm z-50 sticky top-0">
       <div className="flex items-center justify-between w-full max-w-screen-2xl mx-auto">
         {/* Left Section - Logo and CTA */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
+          {/* Mobile sidebar toggle */}
+          <button
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 flex lg:hidden"
+            aria-label="Toggle sidebar"
+            onClick={() => {
+              // Dispatch a simple custom event for Sidebar to listen to
+              window.dispatchEvent(new Event('sidebar:toggle'))
+            }}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-blue-600 rounded-md flex items-center justify-center shadow-sm">

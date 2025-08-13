@@ -1,8 +1,12 @@
 import React from 'react';
 
+// UI utilities, types, and components for statuses, groups, and priorities used across the app
+
 // Types
+// Canonical set of status values supported by the app
 export type Status = 'WORKING_ON_IT' | 'DONE' | 'NOT_STARTED' | 'STUCK';
 
+// Configuration describing how a status should be rendered in the UI
 export interface StatusConfig {
   color: string;
   bgColor: string;
@@ -71,6 +75,7 @@ export const StuckIcon: React.FC<{ className?: string }> = ({ className = "w-4 h
 );
 
 // Status Configuration Map
+// Visual and textual mapping for each status
 export const STATUS_CONFIG: Record<Status, StatusConfig> = {
   WORKING_ON_IT: {
     color: 'amber',
@@ -111,48 +116,58 @@ export const STATUS_CONFIG: Record<Status, StatusConfig> = {
 };
 
 // Enhanced utility functions
+/**
+ * Returns a combined background and text color class for the given status.
+ */
 export function getStatusColor(status: Status | string): string {
   const statusKey = status as Status;
   const config = STATUS_CONFIG[statusKey];
   return config ? `${config.bgColor} text-white` : 'bg-gray-500 text-white';
 }
 
+/** Returns the text color class for the given status. */
 export function getStatusTextColor(status: Status | string): string {
   const statusKey = status as Status;
   const config = STATUS_CONFIG[statusKey];
   return config ? config.textColor : 'text-gray-500';
 }
 
+/** Returns the border color class for the given status. */
 export function getStatusBorderColor(status: Status | string): string {
   const statusKey = status as Status;
   const config = STATUS_CONFIG[statusKey];
   return config ? config.borderColor : 'border-gray-500';
 }
 
+/** Returns a soft background color class for the given status. */
 export function getStatusLightBg(status: Status | string): string {
   const statusKey = status as Status;
   const config = STATUS_CONFIG[statusKey];
   return config ? config.lightBg : 'bg-gray-50';
 }
 
+/** Returns the human-readable text label for the given status. */
 export function getStatusText(status: Status | string): string {
   const statusKey = status as Status;
   const config = STATUS_CONFIG[statusKey];
   return config ? config.text : 'Not Started';
 }
 
+/** Returns the icon React component for the given status. */
 export function getStatusIcon(status: Status | string): React.ComponentType<{ className?: string }> {
   const statusKey = status as Status;
   const config = STATUS_CONFIG[statusKey];
   return config ? config.icon : NotStartedIcon;
 }
 
+/** Returns the full configuration object for the given status. */
 export function getStatusConfig(status: Status | string): StatusConfig {
   const statusKey = status as Status;
   return STATUS_CONFIG[statusKey] || STATUS_CONFIG.NOT_STARTED;
 }
 
 // Enhanced group colors with better variety and accessibility
+// Group color palettes used for differentiating groups visually
 export const GROUP_COLORS = [
   {
     border: 'border-l-blue-500',
@@ -212,17 +227,21 @@ export const GROUP_COLORS = [
   },
 ];
 
+/** Returns the left border color class for a group at the given index. */
 export function getGroupColor(index: number): string {
   return GROUP_COLORS[index % GROUP_COLORS.length].border;
 }
 
+/** Returns the full color set object for a group at the given index. */
 export function getGroupColorSet(index: number) {
   return GROUP_COLORS[index % GROUP_COLORS.length];
 }
 
 // Priority levels with colors
+// Supported priority levels
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
+// Visual/text mapping for each priority level
 export const PRIORITY_CONFIG: Record<Priority, {
   color: string;
   bgColor: string;
@@ -260,12 +279,14 @@ export const PRIORITY_CONFIG: Record<Priority, {
   },
 };
 
+/** Returns background and text color classes for a given priority. */
 export function getPriorityColor(priority: Priority | string): string {
   const priorityKey = priority as Priority;
   const config = PRIORITY_CONFIG[priorityKey];
   return config ? `${config.bgColor} ${config.textColor}` : 'bg-gray-100 text-gray-800';
 }
 
+/** Returns the human-readable text label for a given priority. */
 export function getPriorityText(priority: Priority | string): string {
   const priorityKey = priority as Priority;
   const config = PRIORITY_CONFIG[priorityKey];
@@ -273,16 +294,19 @@ export function getPriorityText(priority: Priority | string): string {
 }
 
 // Utility function to get all available statuses
+/** Returns all defined statuses as a list. */
 export function getAllStatuses(): Status[] {
   return Object.keys(STATUS_CONFIG) as Status[];
 }
 
 // Utility function to check if status is valid
+/** Type guard that checks whether a string is a valid Status. */
 export function isValidStatus(status: string): status is Status {
   return status in STATUS_CONFIG;
 }
 
 // React component for status badge
+/** Props for the StatusBadge React component. */
 export interface StatusBadgeProps {
   status: Status | string;
   size?: 'sm' | 'md' | 'lg';

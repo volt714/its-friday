@@ -6,6 +6,7 @@ import ActionBar from '@/app/components/ActionBar'
 import GroupsBoard from '@/app/components/groups/GroupsBoard'
 import ChatWidget from '@/app/components/chat/ChatWidget'
 
+// Home page fetches groups and users, then renders the main layout with navigation and the board
 export default async function Home() {
   const groups = await prisma.group.findMany({
     orderBy: { order: 'asc' },

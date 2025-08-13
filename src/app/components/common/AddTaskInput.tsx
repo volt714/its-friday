@@ -1,5 +1,8 @@
 'use client'
 
+// AddTaskInput is a hidden input that can be toggled into view to quickly add text
+// It submits the parent form on Enter and hides itself when blurred with an empty value
+
 export default function AddTaskInput({ id, name, placeholder }: { id: string; name: string; placeholder: string }) {
   return (
     <input

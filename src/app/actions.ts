@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
+// Server-side actions for creating, updating, and deleting groups, tasks, and users
 export async function createGroup(name: string) {
   await prisma.group.create({ data: { name } })
   revalidatePath('/')
@@ -72,7 +73,8 @@ export async function createUser(data: { name: string; email?: string | null }) 
   try {
     const client: any = prisma as any
     if (client.user?.create) {
-      await client.user.create({ data: { name, email: email ?? undefined } })
+      // Normal Prisma path when User model exists
+      await client.user.create({ data: { name, email: email ?? null } })
     } else {
       // Fallback: create table if it doesn't exist and insert via raw SQL
       await prisma.$executeRawUnsafe(
