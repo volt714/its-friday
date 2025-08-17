@@ -1,12 +1,18 @@
-"use client"
+"use client"  // This directive ensures the component is rendered on the client-side in Next.js, allowing use of hooks like useState, useEffect, etc.
 
+// Importing React hooks: useMemo for memoized values, useState for state, useTransition for non-blocking updates, useRef for references, useEffect for side effects.
 import { useMemo, useState, useTransition, useRef, useEffect } from 'react'
+// Importing server actions: updateTask to update task details, createUserAction and deleteUserAction for user management.
 import { updateTask, createUserAction, deleteUserAction } from '@/app/actions'
+// Importing a utility to get badge color based on owner name.
 import { getOwnerBadgeColor } from '@/app/components/utils'
+// Importing createPortal from React DOM for rendering popover in body.
 import { createPortal } from 'react-dom'
 
+// Defining SimpleUser type: Basic user with id and name.
 export type SimpleUser = { id: number; name: string }
 
+// Main component: OwnerField, for displaying and editing task owner, with avatar, dropdown, and manage button if allowed.
 export default function OwnerField({
   taskId,
   owner,
@@ -22,41 +28,52 @@ export default function OwnerField({
   size?: 'sm' | 'md'
   canManageOwners?: boolean
 }) {
+  // useTransition: For handling updates without blocking UI, isPending shows loading state.
   const [isPending, startTransition] = useTransition()
+  // State for toggling manage popover.
   const [open, setOpen] = useState(false)
+  // State for error messages in add user form.
   const [error, setError] = useState<string | null>(null)
+  // Ref for the add user form.
   const formRef = useRef<HTMLFormElement>(null)
+  // Ref for the manage button to position popover.
   const buttonRef = useRef<HTMLButtonElement>(null)
+  // State for popover styles (position).
   const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({})
 
+  // Memoized current owner name: Finds name from users if ownerId, else uses owner prop.
   const value = ownerId ?? 0
+  // Size classes for select: Smaller for 'sm', default for 'md'.
   const sizeClasses = size === 'sm' 
     ? 'text-xs px-3 py-1.5 h-8' 
     : 'text-sm px-4 py-2.5 h-10'
 
+  // Memoized current name: Looks up from users or uses owner.
   const currentName = useMemo(() => {
     if (ownerId) {
       const u = users.find((u) => u.id === ownerId)
       return u?.name ?? owner ?? ''
     }
     return owner ?? ''
-  }, [ownerId, users, owner])
+  }, [ownerId, users, owner])  // Dependencies: Recalculates if these change.
 
+  // useEffect: Sets popover position when open, using button position and scroll.
   useEffect(() => {
     if (open && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
       setPopoverStyle({
         position: 'fixed',
-        top: rect.bottom + window.scrollY + 8,
+        top: rect.bottom + window.scrollY + 8,  // Below button, accounting for scroll.
         left: rect.left + window.scrollX,
         zIndex: 1000,
       })
     }
-  }, [open])
+  }, [open])  // Runs when open changes.
 
+  // Rendering: Flex for avatar, select, and manage button.
   return (
     <div className="flex items-center gap-3 relative">
-      {/* Avatar */}
+      {/* Avatar: If name, colored circle with initial; else gray with user icon. */}
       {currentName ? (
         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-sm ${getOwnerBadgeColor(currentName)}`}>
           {currentName.charAt(0).toUpperCase()}
@@ -69,30 +86,32 @@ export default function OwnerField({
         </div>
       )}
 
-      {/* Owner dropdown */}
+      {/* Owner dropdown: Select for choosing owner, updates task on change. */}
       <div className="flex-1 min-w-0">
         <select
           className={`w-full border border-gray-300 rounded-lg bg-white shadow-sm transition-all duration-200 
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
             hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed
-            disabled:bg-gray-50 ${sizeClasses} ${isPending ? 'cursor-wait' : 'cursor-pointer'}`}
-          value={value}
-          onChange={(e) => {
+            disabled:bg-gray-50 ${sizeClasses} ${isPending ? 'cursor-wait' : 'cursor-pointer'}`}  // Dynamic classes for size and pending.
+          value={value}  // Current value from ownerId or 0.
+          onChange={(e) => {  // On change: Get selected, update task with transition.
             const selectedId = Number(e.target.value)
             const selectedUser = users.find((u) => u.id === selectedId)
             startTransition(async () => {
               await updateTask(taskId, {
                 ownerId: selectedId || null,
                 owner: selectedUser?.name ?? null,
-                startDate: selectedId ? new Date().toISOString().slice(0, 10) : null,
+                startDate: selectedId ? new Date().toISOString().slice(0, 10) : null,  // Sets startDate if assigning.
               } as any)
             })
           }}
-          disabled={isPending || !canManageOwners}
+          disabled={isPending || !canManageOwners}  // Disabled during update or if not allowed.
         >
+          // Option for unassigned, shows 'Updating...' if pending.
           <option value={0} className="text-gray-500">
             {isPending ? 'Updating...' : 'Unassigned'}
           </option>
+          // Options for each user.
           {users.map((u) => (
             <option key={u.id} value={u.id} className="text-gray-900">
               {u.name}
@@ -101,18 +120,19 @@ export default function OwnerField({
         </select>
       </div>
 
-      {/* Manage users button */}
+      {/* Manage users button: Shown if canManageOwners, toggles popover. */}
       {canManageOwners && (
         <button
-          ref={buttonRef}
+          ref={buttonRef}  // Ref for positioning.
           type="button"
           className="p-2 rounded-lg border border-gray-300 bg-white shadow-sm transition-all duration-200
             hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 
             focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Manage owners"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpen((v) => !v)}  // Toggles open.
           disabled={!canManageOwners}
         >
+          // SVG users icon.
           <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
               d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
@@ -120,15 +140,16 @@ export default function OwnerField({
         </button>
       )}
 
-      {/* Popover */}
+      {/* Popover: If open and canManage, portal to body for overlay. */}
       {open && canManageOwners && createPortal(
+        // Popover div: Fixed position, white bg, border, shadow.
         <div className="absolute z-50 w-80 bg-white border border-gray-200 rounded-xl shadow-xl p-6" style={popoverStyle}>
-          {/* Header */}
+          {/* Header: Title and close button. */}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
             <h3 className="font-semibold text-gray-900 text-base">Manage Owners</h3>
             <button 
               className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors duration-200" 
-              onClick={() => setOpen(false)} 
+              onClick={() => setOpen(false)}  // Closes popover.
               aria-label="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,9 +158,10 @@ export default function OwnerField({
             </button>
           </div>
 
-          {/* Users list */}
+          {/* Users list: Scrollable if many. */}
           <div className="mb-6">
             <div className="max-h-48 overflow-auto space-y-2">
+              // If no users, empty state.
               {users.length === 0 ? (
                 <div className="text-center py-6 text-gray-500">
                   <svg className="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,6 +170,7 @@ export default function OwnerField({
                   <p className="text-sm">No users yet</p>
                 </div>
               ) : (
+                // Map users to list items with avatar, name, remove button.
                 users.map((u) => (
                   <div key={u.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-150">
                     <div className="flex items-center gap-3">
@@ -156,6 +179,7 @@ export default function OwnerField({
                       </div>
                       <span className="text-sm font-medium text-gray-900">{u.name}</span>
                     </div>
+                    // Form for delete: Hidden input id, submit button.
                     <form action={deleteUserAction}>
                       <input type="hidden" name="id" value={u.id} />
                       <button 
@@ -171,12 +195,12 @@ export default function OwnerField({
             </div>
           </div>
 
-          {/* Add user form */}
+          {/* Add user form: Border top, title, inputs. */}
           <div className="border-t border-gray-100 pt-4">
             <h4 className="font-medium text-gray-900 text-sm mb-3">Add New Owner</h4>
             <form 
-              ref={formRef} 
-              action={async (formData: FormData) => {
+              ref={formRef}  // Ref for reset.
+              action={async (formData: FormData) => {  // Async action: Create user, reset, reload on success; set error on fail.
                 try {
                   setError(null)
                   await createUserAction(formData)
@@ -188,6 +212,7 @@ export default function OwnerField({
               }} 
               className="space-y-3"
             >
+              // Name input: Required.
               <div>
                 <input 
                   name="name" 
@@ -198,6 +223,7 @@ export default function OwnerField({
                   required 
                 />
               </div>
+              // Email input: Optional.
               <div>
                 <input 
                   name="email" 
@@ -209,6 +235,7 @@ export default function OwnerField({
                 />
               </div>
               
+              // Error display: If error, red alert with icon.
               {error && (
                 <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 px-3 py-2 rounded-lg">
                   <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -218,10 +245,11 @@ export default function OwnerField({
                 </div>
               )}
               
+              // Buttons: Cancel and Add.
               <div className="flex justify-end gap-2 pt-2">
                 <button 
                   type="button" 
-                  onClick={() => setOpen(false)} 
+                  onClick={() => setOpen(false)}  // Closes.
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg
                     hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 
                     transition-all duration-200"
@@ -240,7 +268,7 @@ export default function OwnerField({
             </form>
           </div>
         </div>,
-        document.body
+        document.body  // Portals to body for overlay positioning.
       )}
     </div>
   )
