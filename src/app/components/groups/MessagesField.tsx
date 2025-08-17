@@ -70,6 +70,16 @@ export default function MessagesField({
     })()
   }, [open, taskId])
 
+  // Load initial message count
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const msgs = await listTaskMessages(taskId)
+        setHistory(msgs as any)
+      } catch {}
+    })()
+  }, [taskId])
+
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -103,30 +113,27 @@ export default function MessagesField({
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center">
       <button
         ref={buttonRef}
         type="button"
         onClick={() => !disabled && setOpen((v) => !v)}
         disabled={disabled}
-        className={`p-2 rounded-lg border border-gray-300 bg-white shadow-sm transition-all duration-200
-          ${disabled 
-            ? 'cursor-not-allowed opacity-50 bg-gray-50' 
-            : 'hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-          }`}
+        className="text-[#D0D4E7] hover:text-[#6161FF] transition-colors p-1"
         title="Messages"
         aria-label="Messages"
       >
-        <div className="relative">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
-            <path d="M21 15a4 4 0 01-4 4H7l-4 4V7a4 4 0 014-4h10a4 4 0 014 4v8z"></path>
-            <path d="M12 8v6M9 11h6"></path>
-          </svg>
-          {history.length > 0 && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border border-white"></div>
-          )}
-        </div>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
       </button>
+      
+      {/* Message count badge - positioned absolutely on top right */}
+      {history.length > 0 && (
+        <div className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 bg-[#579BFC] text-white rounded-full text-[10px] font-medium px-1">
+          {history.length}
+        </div>
+      )}
 
       {open && (
         <div ref={popoverRef} className="absolute" style={popoverStyle}>

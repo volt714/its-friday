@@ -13,10 +13,7 @@ export default function DeleteGroupButton({
 }) {
   return (
     <form
-      action={async () => {
-        'use server'
-        await deleteGroup(groupId)
-      }}
+      action={deleteGroup.bind(null, groupId)}
     >
       <ConfirmSubmitButton
         confirmMessage={`Are you sure you want to delete "${groupName}" group and all its tasks?`}

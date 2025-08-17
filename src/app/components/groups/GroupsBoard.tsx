@@ -183,11 +183,21 @@ export default function GroupsBoard({
   users?: User[]
   canManage?: boolean 
 }) {
-  const totalTasks = groups.reduce((acc, group) => acc + group.tasks.length, 0);
-  const completedTasks = groups.reduce((acc, group) => 
-    acc + group.tasks.filter(task => task.status === 'DONE').length, 0
-  );
+  // Separate completed tasks and keep track of their original group
+  const completedTasks: (TaskLite & { originalGroupName: string })[] = [];
+  const groupsWithoutCompleted = groups.map(group => {
+    const tasksNotDone = group.tasks.filter(task => {
+      if (task.status === 'DONE') {
+        completedTasks.push({ ...task, originalGroupName: group.name });
+        return false;
+      }
+      return true;
+    });
+    return { ...group, tasks: tasksNotDone };
+  });
 
+  const totalTasks = groups.reduce((acc, group) => acc + group.tasks.length, 0);
+  const completedTasksCount = completedTasks.length;
   const hasGroups = groups.length > 0;
 
   return (
@@ -195,7 +205,7 @@ export default function GroupsBoard({
       <BoardHeader 
         groupCount={groups.length} 
         totalTasks={totalTasks} 
-        completedTasks={completedTasks} 
+        completedTasks={completedTasksCount} 
       />
 
       <main className="max-w-screen-2xl mx-auto px-8 lg:px-12 py-16 md:py-20">
@@ -204,7 +214,7 @@ export default function GroupsBoard({
         ) : (
           <div>
             <div className="space-y-16">
-              {groups.map((group, index) => (
+              {groupsWithoutCompleted.map((group, index) => (
                 <GroupCard 
                   key={group.id}
                   group={group} 
@@ -213,7 +223,20 @@ export default function GroupsBoard({
                   canManage={canManage} 
                 />
               ))}
-
+              {/* Render Completed group if there are any completed tasks */}
+              {completedTasks.length > 0 && (
+                <GroupCard
+                  key="completed-group"
+                  group={{
+                    id: -1,
+                    name: 'Completed',
+                    tasks: completedTasks.map(({ originalGroupName, ...task }) => task),
+                  }}
+                  index={groups.length}
+                  users={users}
+                  canManage={canManage}
+                />
+              )}
               {canManage && <AddNewGroupCard />}
             </div>
 
@@ -221,7 +244,7 @@ export default function GroupsBoard({
               <StatisticsSection 
                 groupCount={groups.length} 
                 totalTasks={totalTasks} 
-                completedTasks={completedTasks} 
+                completedTasks={completedTasksCount} 
               />
             )}
           </div>
