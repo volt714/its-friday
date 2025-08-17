@@ -1,162 +1,163 @@
-This project now includes a Monday-style dashboard backed by MySQL via Prisma.
+# Its-Friday: Monday-style Dashboard
 
-## Getting Started
+A modern, collaborative project dashboard inspired by Monday.com, built with Next.js, Prisma, and MySQL. Designed for easy onboarding and contribution, especially for new git users.
 
-Setup and run the development server:
+---
 
+## 🚀 Quick Start
+
+### 1. Clone the Repository
+```bash
+git clone <your-repo-url>
+cd its-friday
+```
+
+### 2. Install Dependencies
 ```bash
 npm install
+```
+
+### 3. Configure the Database
+- Create a `.env` file in the project root:
+  ```
+  DATABASE_URL="mysql://root:123456@localhost:3306/portal_db"
+  ```
+- Make sure MySQL is running and accessible.
+
+### 4. Set Up the Database Schema
+```bash
 npx prisma generate
 npx prisma migrate dev --name init
+```
+
+### 5. Seed the Database (Optional, but recommended)
+```bash
+node prisma/seed.js
+```
+- This creates a default developer account:
+  - **Username:** `develop123`
+  - **Password:** `Test123`
+
+### 6. Start the Development Server
+```bash
 npm run dev
 ```
+- Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+## 📝 Features
+- Kanban-style board with groups and tasks
+- User authentication and roles (Developer, Admin, User)
+- User management (add, delete, impersonate, change password)
+- Real-time updates via server actions and revalidation
+- Responsive UI with chat widget
 
-Environment
+---
 
-Add a `.env` file with:
+## 👤 User Management & Roles
 
-```
-DATABASE_URL="mysql://root:123456@localhost:3306/portal_db"
-```
+### Roles
+- **DEVELOPER:** Full access (manage users, groups, tasks, roles, impersonate)
+- **ADMIN:** Manage groups, tasks, and users (can only assign USER role)
+- **USER:** Can view and update their own tasks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Default Accounts
+- After seeding, log in as:
+  - **Username:** `develop123`
+  - **Password:** `Test123`
 
-## Architecture & Flow
+### Creating Users
+- Go to `/users` or `/signup` to add new users.
+- You can set the role (USER, ADMIN, DEVELOPER) during signup.
 
-The app uses the Next.js App Router with server components, Prisma for data access, and MySQL for persistence. UI interactions use lightweight form actions that call server actions to mutate data and then `revalidatePath` to refresh views.
+### Managing Users
+- **Impersonate:** Use the "Use" button on the Users page to switch to another user (DEVELOPER only).
+- **Change Role:** Select a new role and click "Save" (DEVELOPER can assign any role, ADMIN can only assign USER).
+- **Change Password:** Enter a new password and click "Set" (self, ADMIN, or DEVELOPER).
+- **Delete:** Click "Delete" (ADMIN or DEVELOPER only).
 
-```mermaid
-graph TD
-  A[User (Browser)] --> B[Next.js App Router (/)]
-  B --> C[Server Component: Home<br/>src/app/page.tsx]
-  C --> D[Prisma Client<br/>src/lib/prisma.ts]
-  D --> E[(MySQL)]
+---
 
-  C --> F[UI Composition]
-  F --> F1[TopNav]
-  F --> F2[Sidebar]
-  F --> F3[ProjectHeader]
-  F --> F4[ActionBar]
-  F --> F5[GroupsBoard]
-  F5 --> G1[GroupCard]
-  G1 --> G2[TaskRow]
-  G2 --> G3[OwnerField]
-  C --> H[ChatWidget (client)]
+## 🛠️ Project Structure
+- `prisma/schema.prisma` — Database models
+- `prisma/seed.js` — Seeds default users, groups, and tasks
+- `src/app/` — Next.js app directory (pages, components, actions)
+- `src/lib/` — Prisma client and authentication helpers
 
-  subgraph Server Actions<br/>src/app/actions.ts
-    S1[createGroup]
-    S2[createTask]
-    S3[updateTask]
-    S4[deleteTask]
-    S5[deleteGroup]
-    S6[createUser / deleteUser]
-  end
+---
 
-  G2 -. form submit .-> S3
-  G2 -. delete .-> S4
-  G3 -. assign owner .-> S3
-  G1 -. add task .-> S2
-  F5 -. add group .-> S1
-  S1 --> E
-  S2 --> E
-  S3 --> E
-  S4 --> E
-  S5 --> E
-  S6 --> E
-```
+## 🧑‍💻 Git & Contribution Guide
 
-### Database schema
+### Git Basics for New Users
+- **Clone:** `git clone <repo-url>`
+- **Check Status:** `git status`
+- **Add Changes:** `git add <file>`
+- **Commit:** `git commit -m "Your message"`
+- **Push:** `git push`
+- **Pull:** `git pull`
 
-```mermaid
-erDiagram
-  Group ||--o{ Task : contains
-  User ||--o{ Task : assigned
+### Contributing Workflow
+1. **Fork** this repo and clone your fork.
+2. **Create a new branch** for your feature or fix:
+   ```bash
+   git checkout -b my-feature
+   ```
+3. **Make your changes** and commit them.
+4. **Push** your branch:
+   ```bash
+   git push origin my-feature
+   ```
+5. **Open a Pull Request** on GitHub.
 
-  Group {
-    int id PK
-    string name
-    int order
-    datetime createdAt
-    datetime updatedAt
-  }
-  Task {
-    int id PK
-    string title
-    string owner nullable  // legacy text owner
-    int ownerId nullable FK // -> User.id
-    enum status
-    datetime dueDate nullable
-    string dropdown nullable
-    int groupId FK // -> Group.id
-    datetime createdAt
-    datetime updatedAt
-  }
-  User {
-    int id PK
-    string name
-    string email nullable unique
-    string avatar nullable
-    datetime createdAt
-    datetime updatedAt
-  }
-```
+### Tips
+- Keep commits small and focused.
+- Write clear commit messages.
+- Ask for help if you get stuck!
 
-### Typical interaction: update a task
+---
 
-```mermaid
-sequenceDiagram
-  actor U as User
-  participant TR as TaskRow (client)
-  participant SA as Server Actions
-  participant DB as Prisma/MySQL
-  U->>TR: Edit title/status/due date
-  TR->>SA: updateTask(id, fields)
-  SA->>DB: prisma.task.update(...)
-  DB-->>SA: OK
-  SA-->>TR: revalidatePath("/")
-  note over TR: Board re-renders with fresh data
-```
+## 🏗️ Architecture & Data Flow
 
-## Code Overview (key files)
+- Next.js App Router (server components)
+- Prisma ORM for MySQL
+- UI: TopNav, Sidebar, ProjectHeader, ActionBar, GroupsBoard, ChatWidget
+- Server actions for all mutations (create/update/delete)
+- Automatic UI refresh via `revalidatePath`
 
-- **`prisma/schema.prisma`**: Models `Group`, `Task`, `User` and `Status` enum. `Task.ownerId` relates to `User`. `Task.groupId` cascades on delete.
-- **`src/lib/prisma.ts`**: Exposes a singleton `PrismaClient` with query/error/warn logging; avoids connection exhaustion in dev.
-- **`src/app/actions.ts`**: Server actions used by UI forms.
-  - **groups**: `createGroup`, `deleteGroup`
-  - **tasks**: `createTask`, `updateTask`, `deleteTask` (normalizes dates, safe optional fields)
-  - **users**: `createUser`, `deleteUser` (graceful fallback to raw SQL if the `User` model is missing)
-- **`src/app/page.tsx`**: Server component. Fetches groups (and tasks) and users, then composes the dashboard UI (`TopNav`, `Sidebar`, `ProjectHeader`, `ActionBar`, `GroupsBoard`, `ChatWidget`).
-- **`src/app/layout.tsx`**: Global layout, fonts, and base styles.
-- **`src/app/components/groups/GroupsBoard.tsx`**: Renders a list of groups with tasks and an `AddNewGroupCard`.
-- **`src/app/components/groups/TaskRow.tsx`**: Client component; inline editing via form `action` handlers calling server actions. Handles delete confirmation.
-- **`src/app/components/groups/OwnerField.tsx`**: Owner selection; updates `owner`/`ownerId` via server action.
-- **`src/app/components/ActionBar.tsx`**: Toolbar with common board actions (UI only in this demo).
-- **`src/app/components/Sidebar.tsx`**: Collapsible/pinnable navigation; persists state in `localStorage` and supports a mobile drawer.
-- **`src/app/components/chat/ChatWidget.tsx`**: Floating client-side chat demo; toggles a panel, responsive on small screens.
-- **`src/app/users/page.tsx`**: User management page; lists users and provides add/delete via server actions with `revalidatePath("/users")`.
-- **`src/app/components/utils.ts`**: Styling helpers for status/due date/dropdown tones and class utilities used by `TaskRow` and others.
+---
 
-## Notes on data flow and revalidation
+## 🗃️ Database Schema (Simplified)
+- **Group:** id, name, order, createdAt, updatedAt
+- **Task:** id, title, owner, ownerId, status, dueDate, groupId, createdAt, updatedAt
+- **User:** id, name, email, passwordHash, role, createdAt, updatedAt
+- **TaskAssignee:** taskId, userId
+- **TaskMessage:** id, taskId, userId, body, createdAt
 
-- **Mutations** use server actions that finish by calling `revalidatePath` so the affected route fetches fresh data on the next render.
-- **Dates** from form inputs are normalized to `Date` before persisting.
-- **User fallbacks**: User actions fall back to raw SQL if the Prisma `User` model/client isn’t available yet (e.g., before running migrations).
+---
 
-## Learn More
+## 💡 FAQ
 
-To learn more about Next.js, take a look at the following resources:
+**Q: I can't log in after seeding!**
+- Use the default developer account: `develop123` / `Test123`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Q: How do I reset the database?**
+- Run `npx prisma migrate reset` and then `node prisma/seed.js`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Q: How do I add more users?**
+- Use the Users page (`/users`) or the Signup page (`/signup`).
 
-## Deploy on Vercel
+**Q: How do I contribute if I'm new to git?**
+- See the Git Basics and Contributing Workflow above.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📚 Learn More
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [GitHub Docs: Getting Started with Git](https://docs.github.com/en/get-started/quickstart)
+
+---
+
+## 🛡️ License
+MIT

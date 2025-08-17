@@ -17,9 +17,9 @@ enum Status {
 }
 
 enum Role {
-  DEVELOPER
-  ADMIN
   USER
+  ADMIN
+  DEVELOPER
 }
 
 model Group {
@@ -50,17 +50,14 @@ model Task {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String?  @unique
-  avatar    String?
-  role      Role     @default(USER)
-  passwordHash String?
-  tasks     Task[]  @relation("UserTasks")
-  assignedTasks TaskAssignee[]
-  taskMessages TaskMessage[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int       @id @default(autoincrement())
+  name          String    @unique
+  email         String?   @unique
+  passwordHash  String
+  role          Role      @default(USER)
+  Task          Task[]    @relation("UserTasks")
+  TaskAssignee  TaskAssignee[]
+  TaskMessage   TaskMessage[]
 }
 
 model TaskAssignee {

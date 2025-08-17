@@ -108,19 +108,43 @@ export async function deleteGroup(id: number) {
 export async function createUser(data: { name: string; email?: string | null; role?: 'DEVELOPER' | 'ADMIN' | 'USER'; password?: string | null }) {
   'use server'
   const { name, email, role, password } = data
-  // Allow unauthenticated creation; force role to USER when unauthenticated
-  const me = await getCurrentUser()
-  const roleToSet = !me ? 'USER' : (role as any) ?? undefined
-  if (me?.role === 'ADMIN' && roleToSet && roleToSet !== 'USER') {
-    throw new Error('Admins can only assign USER')
+  
+  // Validate required fields
+  if (!name || !password) {
+    throw new Error('Name and password are required')
   }
-  const passwordHash = password ? crypto.createHash('sha256').update(password).digest('hex') : null
+  
+  // For signup (unauthenticated), allow any role
+  // For authenticated users creating other users, enforce role hierarchy
+  const me = await getCurrentUser()
+  let roleToSet: 'DEVELOPER' | 'ADMIN' | 'USER'
+  
+  if (!me) {
+    // Signup case - allow any role
+    roleToSet = role || 'USER'
+  } else {
+    // Authenticated user creating another user - enforce restrictions
+    roleToSet = role || 'USER'
+    if (me.role === 'ADMIN' && roleToSet !== 'USER') {
+      throw new Error('Admins can only assign USER role')
+    }
+  }
+  
+  // Always hash the password since it's required
+  const passwordHash = crypto.createHash('sha256').update(password).digest('hex')
   
   try {
     const client: any = prisma as any
     if (client.user?.create) {
       // Normal Prisma path when User model exists
-      await client.user.create({ data: { name, email: email ?? null, role: roleToSet, passwordHash } })
+      await client.user.create({ 
+        data: { 
+          name: name.trim(), 
+          email: email ?? null, 
+          role: roleToSet, 
+          passwordHash 
+        } 
+      })
     } else {
       // Fallback: create table if it doesn't exist and insert via raw SQL
       await prisma.$executeRawUnsafe(
@@ -151,7 +175,7 @@ export async function createUser(data: { name: string; email?: string | null; ro
       }
       
       await prisma.$executeRaw`
-        INSERT INTO \`User\` (\`name\`, \`email\`, \`passwordHash\`) VALUES (${name}, ${email ?? null}, ${passwordHash})
+        INSERT INTO \`User\` (\`name\`, \`email\`, \`role\`, \`passwordHash\`) VALUES (${name}, ${email ?? null}, ${roleToSet}, ${passwordHash})
       `
     }
     revalidatePath('/')
@@ -191,7 +215,25 @@ export async function createUserAction(formData: FormData) {
   const name = String(formData.get('name') || '').trim()
   const emailRaw = String(formData.get('email') || '').trim()
   const password = String(formData.get('password') || '').trim()
-  await createUser({ name, email: emailRaw || null, password: password || null })
+  
+  console.log('createUserAction called with:', { name, emailRaw, password })
+  
+  if (!password) {
+    throw new Error('Password is required')
+  }
+  
+  const role = String(formData.get('role') || 'USER') as 'DEVELOPER' | 'ADMIN' | 'USER'
+  console.log('Role selected:', role)
+  
+  try {
+    await createUser({ name, email: emailRaw || null, password, role })
+    console.log('User created successfully')
+    // Return success response instead of redirect
+    return { success: true, message: 'Account created successfully. Please sign in.' }
+  } catch (error: any) {
+    console.error('Error creating user:', error)
+    throw new Error(error.message || 'Failed to create user')
+  }
 }
 
 export async function deleteUserAction(formData: FormData) {

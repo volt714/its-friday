@@ -31,19 +31,19 @@ export default function GroupCard({ group, index, users = [], canManage = false 
   const toggleId = `add-task-${group.id}`
   const colorSet = getGroupColorSet(index)
   return (
-    <div className={`bg-white rounded-lg ${colorSet.border} border-l-4 overflow-hidden shadow-sm text-gray-900`}> 
+    <div className={`bg-white rounded-xl ${colorSet.border} border-l-4 overflow-hidden shadow-md text-gray-900`}> 
       {/* Header: group name, count, and actions */}
-      <div className={`flex items-center justify-between px-4 lg:px-6 py-3 ${colorSet.bg} border-b`}> 
-        <div className="flex items-center gap-3">
+      <div className={`flex items-center justify-between px-6 lg:px-8 py-4 ${colorSet.bg} border-b`}> 
+        <div className="flex items-center gap-4">
           <button className="text-gray-700 hover:text-gray-900 transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          <h3 className={`font-semibold ${colorSet.text}`}>{group.name}</h3>
-          <span className={`text-xs px-2 py-0.5 rounded ${colorSet.text} ${colorSet.bg}`}>{group.tasks.length}</span>
+          <h3 className={`font-semibold text-lg ${colorSet.text}`}>{group.name}</h3>
+          <span className={`text-sm px-2.5 py-1 rounded ${colorSet.text} ${colorSet.bg}`}>{group.tasks.length}</span>
           {canManage && (
-            <div className="ml-2 opacity-100">
+            <div className="ml-3 opacity-100">
               <DeleteGroupButton groupId={group.id} groupName={group.name} />
             </div>
           )}
@@ -62,11 +62,11 @@ export default function GroupCard({ group, index, users = [], canManage = false 
               dropdown: '',
             })
           }}
-          className="hidden lg:flex gap-2 items-center"
+          className="hidden lg:flex gap-3 items-center"
         >
           {/* Toggle quick input row for adding a task (desktop only) */}
-          <ToggleInputButton targetId={toggleId} className="text-gray-700 hover:text-gray-900 text-sm flex items-center gap-2 transition-colors">
-            <span className="text-lg">+</span>
+          <ToggleInputButton targetId={toggleId} className="text-gray-700 hover:text-gray-900 text-base flex items-center gap-2 transition-colors">
+            <span className="text-xl">+</span>
             <span>Add task</span>
           </ToggleInputButton>
           <AddTaskInput id={toggleId} name="title" placeholder="Enter task name" />
@@ -76,15 +76,14 @@ export default function GroupCard({ group, index, users = [], canManage = false 
 
       <div className="overflow-x-auto">
         {/* Desktop table layout */}
-        <div className="hidden lg:block min-w-[920px]">
-          <div className="grid grid-cols-12 gap-3 px-6 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-700 tracking-normal">
+        <div className="hidden lg:block min-w-[1024px]">
+          <div className="grid grid-cols-12 gap-4 px-8 py-3 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700 tracking-normal">
             <div className="col-span-3">Task</div>
             <div className="col-span-2">Owner</div>
-            <div className="col-span-1">Start date</div>
+            <div className="col-span-2">Start date</div>
             <div className="col-span-2">Status</div>
-            <div className="col-span-1">Due date</div>
+            <div className="col-span-2">Due date</div>
             <div className="col-span-1">Messages</div>
-            <div className="col-span-1"></div>
           </div>
           <div className="divide-y">
              {group.tasks.map((task: TaskLite) => (
@@ -93,7 +92,7 @@ export default function GroupCard({ group, index, users = [], canManage = false 
           </div>
         </div>
         {/* Mobile card layout */}
-        <div className="lg:hidden space-y-2 p-4">
+        <div className="lg:hidden space-y-4 p-6">
           {group.tasks.map((t: TaskLite) => (
             <MobileTaskCard key={t.id} task={t as any} canEditCore={canManage} />
           ))}
@@ -101,7 +100,7 @@ export default function GroupCard({ group, index, users = [], canManage = false 
       </div>
 
       {/* Bottom quick add row (visible on all breakpoints) */}
-       <div className="px-6 py-3 border-t bg-gray-50/30">
+       <div className="px-8 py-4 border-t bg-gray-50/30">
         {canManage && (
         <form
           action={async (formData: FormData) => {
@@ -116,10 +115,10 @@ export default function GroupCard({ group, index, users = [], canManage = false 
               dropdown: '',
             })
           }}
-          className="flex items-center gap-2"
+          className="flex items-center gap-3"
         >
-          <ToggleInputButton targetId={`${toggleId}-bottom`} className="text-gray-400 hover:text-gray-600 text-sm flex items-center gap-2 transition-colors">
-            <span className="text-lg">+</span>
+          <ToggleInputButton targetId={`${toggleId}-bottom`} className="text-gray-400 hover:text-gray-600 text-base flex items-center gap-2 transition-colors">
+            <span className="text-xl">+</span>
             <span>Add task</span>
           </ToggleInputButton>
           <AddTaskInput id={`${toggleId}-bottom`} name="title" placeholder="Enter task name" />
@@ -129,5 +128,3 @@ export default function GroupCard({ group, index, users = [], canManage = false 
     </div>
   )
 }
-
-

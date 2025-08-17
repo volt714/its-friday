@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
-export default function LoginPage({ searchParams }: { searchParams?: { error?: string } }) {
+export default function LoginPage({ searchParams }: { searchParams?: { error?: string, success?: string } }) {
   return (
     <div className="min-h-screen grid place-items-center bg-gray-50">
       <div className="bg-white p-6 rounded-lg shadow w-full max-w-sm">
@@ -11,6 +11,11 @@ export default function LoginPage({ searchParams }: { searchParams?: { error?: s
         {searchParams?.error && (
           <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2">
             {decodeURIComponent(searchParams.error)}
+          </div>
+        )}
+        {searchParams?.success && (
+          <div className="mb-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded p-2">
+            {decodeURIComponent(searchParams.success)}
           </div>
         )}
         <form action={async (formData: FormData) => {
@@ -39,8 +44,9 @@ export default function LoginPage({ searchParams }: { searchParams?: { error?: s
           <button type="submit" className="w-full bg-blue-600 text-white rounded py-2 hover:bg-blue-700">Sign in</button>
         </form>
         <div className="text-xs text-gray-500 mt-3">Default Developer: develop123 / Test123</div>
-        <div className="mt-3 text-sm">
+        <div className="mt-3 text-sm flex justify-between">
           <Link className="text-blue-600 hover:underline" href="/">Back to home</Link>
+          <Link className="text-blue-600 hover:underline" href="/signup">Create an account</Link>
         </div>
       </div>
     </div>

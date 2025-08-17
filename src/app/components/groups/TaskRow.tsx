@@ -28,127 +28,153 @@ export default function TaskRow({ task, users = [], canEditCore = false }: { tas
   const isUser = !canEditCore
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // ... (All your handler functions remain exactly the same)
   // Update task title on submit
   const handleTitleSubmit = async (formData: FormData) => {
-    // 'use server'; <-- REMOVED: This directive should not be here
     const newTitle = String(formData.get('title') || '');
-    if (newTitle !== task.title) { // Only update if changed
+    if (newTitle !== task.title) {
       await updateTask(task.id, { title: newTitle });
     }
   };
 
   // Update owner string (legacy field) on submit
   const handleOwnerSubmit = async (formData: FormData) => {
-    // 'use server'; <-- REMOVED
     const newOwner = String(formData.get('owner') || '');
-    if (newOwner !== task.owner) { // Only update if changed
+    if (newOwner !== task.owner) {
       await updateTask(task.id, { owner: newOwner });
     }
   };
 
   // Update status on submit
   const handleStatusSubmit = async (formData: FormData) => {
-    // 'use server'; <-- REMOVED
     const newStatus = String(formData.get('status')) as Status;
-    if (newStatus !== task.status) { // Only update if changed
+    if (newStatus !== task.status) {
       await updateTask(task.id, { status: newStatus });
     }
   };
 
   // Update start date on submit; normalize to yyyy-mm-dd string for comparison
   const handleStartDateSubmit = async (formData: FormData) => {
-    // 'use server'; <-- REMOVED
     const newStartDate = String(formData.get('startDate') || '');
-    // Convert newStartDate to Date or null before comparing, handle potential invalid date string
     const currentStartDateISO = task.startDate ? new Date(task.startDate).toISOString().slice(0, 10) : '';
-    if (newStartDate !== currentStartDateISO) { // Only update if changed
+    if (newStartDate !== currentStartDateISO) {
       await updateTask(task.id, { startDate: newStartDate });
     }
   };
 
   // Update due date on submit; normalize to yyyy-mm-dd string for comparison
   const handleDueDateSubmit = async (formData: FormData) => {
-    // 'use server'; <-- REMOVED
     const newDueDate = String(formData.get('dueDate') || '');
-    // Convert newDueDate to Date or null before comparing, handle potential invalid date string
     const currentDueDateISO = task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 10) : '';
-    if (newDueDate !== currentDueDateISO) { // Only update if changed
+    if (newDueDate !== currentDueDateISO) {
       await updateTask(task.id, { dueDate: newDueDate });
     }
   };
 
   // Update custom dropdown field on submit
   const handleDropdownSubmit = async (formData: FormData) => {
-    // 'use server'; <-- REMOVED
     const newDropdown = String(formData.get('dropdown') || '');
-    if (newDropdown !== (task.dropdown ?? '')) { // Only update if changed
+    if (newDropdown !== (task.dropdown ?? '')) {
       await updateTask(task.id, { dropdown: newDropdown });
     }
   };
 
   // Delete task after confirmation
   const handleDeleteTask = async () => {
-    // 'use server'; <-- REMOVED
     await deleteTask(task.id);
-    setShowDeleteConfirm(false); // Close the modal after deletion
+    setShowDeleteConfirm(false);
   };
 
-  // Compute status color classes for select control
+  // Compute status color classes for select control - Monday.com light theme style
   const getStatusDisplayColorClass = (status: Status) => {
     switch (status) {
       case 'WORKING_ON_IT':
-        return 'bg-green-500 text-white'; // Green for 'Working on it'
+        return 'bg-[#00C875] hover:bg-[#00B368] text-white'; // Monday green (matching your image)
       case 'DONE':
-        return 'bg-orange-500 text-white'; // Orange for 'Done'
+        return 'bg-[#00C875] hover:bg-[#00B368] text-white'; // Monday green (matching your image)
       case 'NOT_STARTED':
-        return 'bg-gray-600 text-white'; // Dark gray for 'Not Started'
+        return 'bg-[#C4C4C4] hover:bg-[#B0B0B0] text-[#323338]'; // Monday gray
       case 'STUCK':
-        return 'bg-red-500 text-white'; // Orange for 'Stuck'
+        return 'bg-[#E2445C] hover:bg-[#D13650] text-white'; // Monday red
       default:
-        return 'bg-gray-200 text-gray-800'; // Default neutral color
+        return 'bg-[#C4C4C4] hover:bg-[#B0B0B0] text-[#323338]';
     }
   };
 
+  // Get status display text
+  const getStatusDisplayText = (status: Status) => {
+    switch (status) {
+      case 'WORKING_ON_IT':
+        return 'Working on it';
+      case 'DONE':
+        return 'Done';
+      case 'NOT_STARTED':
+        return 'Not Started';
+      case 'STUCK':
+        return 'Stuck';
+      default:
+        return 'Not Started';
+    }
+  };
+
+
   return (
     <>
-      <div className="grid grid-cols-12 gap-3 px-6 py-3 hover:bg-gray-50 items-center group transition-colors text-gray-900">
+      {/* Grid layout matching the table header structure:
+        col-span-1: Checkbox
+        col-span-3: Task Title
+        col-span-2: Owner
+        col-span-1: Start Date
+        col-span-2: Status
+        col-span-1: Due Date
+        col-span-1: Messages
+        col-span-1: Empty spacing
+      */}
+      <div className="grid grid-cols-12 gap-3 items-center group hover:bg-[#F5F6FA] transition-all duration-150 border-b border-[#E6E8F0] min-h-[48px] bg-white px-6">
+        
+        {/* Checkbox */}
+        <div className="col-span-1 flex justify-center">
+          <div className="w-4 h-4 border-2 border-[#C4C4C4] rounded-sm hover:border-[#6161FF] cursor-pointer bg-white transition-colors duration-150"></div>
+        </div>
+
         {/* Task Title Section */}
         <div className="col-span-3 flex items-center gap-2">
-          {/* Action Buttons (Star and Comment) - visible on hover */}
-          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             <button
-              className="text-gray-700 hover:text-yellow-500 transition-colors"
+              className="text-[#676879] hover:text-[#FDAB3D] transition-colors p-1 rounded"
               aria-label="Mark task as important"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
               </svg>
             </button>
             <button
-              className="text-gray-700 hover:text-blue-500 transition-colors"
+              className="text-[#676879] hover:text-[#6161FF] transition-colors p-1 rounded"
               aria-label="View task comments"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
               </svg>
             </button>
           </div>
-          {/* Editable Task Title Input */}
           <form action={handleTitleSubmit} className="flex-1">
             <input
               name="title"
               defaultValue={task.title}
               disabled={!canEditCore}
-              className={`bg-transparent border-none outline-none w-full placeholder-gray-400 rounded-md transition-all text-gray-900 text-[15px] ${
-                canEditCore ? 'focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:px-2 focus:py-1' : 'cursor-not-allowed opacity-70'
+              className={`bg-transparent border-none outline-none w-full text-[#323338] text-sm placeholder-[#9699A6] transition-all duration-150 ${
+                canEditCore 
+                  ? 'focus:bg-white focus:outline focus:outline-2 focus:outline-[#6161FF] focus:rounded-md focus:px-2 focus:py-1 hover:bg-[#F5F6FA]' 
+                  : 'cursor-not-allowed opacity-60'
               }`}
-              onBlur={(e) => canEditCore && e.target.form?.requestSubmit()} // Submit on blur
+              placeholder="Enter task name..."
+              onBlur={(e) => canEditCore && e.target.form?.requestSubmit()}
               onKeyDown={(e) => {
                 if (!canEditCore) return
                 if (e.key === 'Enter') {
-                  e.preventDefault(); // Prevent new line in input
-                  e.currentTarget.form?.requestSubmit(); // Submit on Enter
-                  e.currentTarget.blur(); // Remove focus after submit
+                  e.preventDefault();
+                  e.currentTarget.form?.requestSubmit();
+                  e.currentTarget.blur();
                 }
               }}
             />
@@ -157,19 +183,27 @@ export default function TaskRow({ task, users = [], canEditCore = false }: { tas
 
         {/* Task Owner Section */}
         <div className="col-span-2">
-          <OwnerField taskId={task.id} owner={task.owner ?? null} ownerId={(task as any).ownerId ?? null} users={users} canManageOwners={canEditCore} />
+          <OwnerField 
+            taskId={task.id} 
+            owner={task.owner ?? null} 
+            ownerId={(task as any).ownerId ?? null} 
+            users={users} 
+            canManageOwners={canEditCore} 
+          />
         </div>
 
         {/* Start Date Section */}
         <div className="col-span-1">
-           <form action={handleStartDateSubmit}>
+          <form action={handleStartDateSubmit}>
             <input
               name="startDate"
               type="date"
               defaultValue={task.startDate ? new Date(task.startDate).toISOString().slice(0, 10) : ''}
-              className="bg-transparent border-none outline-none
-                          focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:px-2 focus:py-1 rounded-md text-sm w-full transition-all"
-              onChange={(e) => e.target.form?.requestSubmit()} // Submit on change
+              className="bg-transparent border-none outline-none text-[#323338] text-sm w-full
+                         focus:bg-white focus:outline focus:outline-2 focus:outline-[#6161FF] 
+                         focus:rounded-md focus:px-2 focus:py-1 hover:bg-[#F5F6FA] cursor-pointer
+                         transition-all duration-150"
+              onChange={(e) => e.target.form?.requestSubmit()}
               disabled={!canEditCore}
             />
           </form>
@@ -177,13 +211,14 @@ export default function TaskRow({ task, users = [], canEditCore = false }: { tas
 
         {/* Task Status Section */}
         <div className="col-span-2">
-           <form action={handleStatusSubmit}>
+          <form action={handleStatusSubmit}>
             <select
               name="status"
               defaultValue={task.status}
-              // Dynamically apply color based on status, explicitly matching the image
-              className={`${getStatusSelectBaseClasses()} cursor-pointer appearance-none transition-all ${getStatusDisplayColorClass(task.status)} text-sm`}
-              onChange={(e) => e.target.form?.requestSubmit()} // Submit on change
+              className={`appearance-none cursor-pointer transition-all duration-150 text-sm font-medium
+                          border-none rounded-md px-3 py-1.5 w-full text-center outline-none
+                          ${getStatusDisplayColorClass(task.status)}`}
+              onChange={(e) => e.target.form?.requestSubmit()}
               disabled={false}
             >
               <option value="WORKING_ON_IT">Working on it</option>
@@ -196,59 +231,66 @@ export default function TaskRow({ task, users = [], canEditCore = false }: { tas
 
         {/* Due Date Section */}
         <div className="col-span-1">
-           <form action={handleDueDateSubmit}>
+          <form action={handleDueDateSubmit}>
             <input
               name="dueDate"
               type="date"
               defaultValue={task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 10) : ''}
-              className={`bg-transparent border-none outline-none
-                          focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:px-2 focus:py-1 rounded-md text-sm w-full transition-all
-                          ${getDueDateTone(task.dueDate as any)}`} // Use utility for due date tone
-              onChange={(e) => e.target.form?.requestSubmit()} // Submit on change
+              className="bg-transparent border-none outline-none text-[#323338] text-sm w-full
+                         focus:bg-white focus:outline focus:outline-2 focus:outline-[#6161FF] 
+                         focus:rounded-md focus:px-2 focus:py-1 hover:bg-[#F5F6FA] cursor-pointer
+                         transition-all duration-150"
+              onChange={(e) => e.target.form?.requestSubmit()}
               disabled={false}
             />
           </form>
         </div>
 
-        {/* Messages (uses dropdown column to persist notes) */}
-        <div className="col-span-1">
-          <MessagesField taskId={task.id} value={task.dropdown} disabled={!canEditCore} />
-        </div>
-
-        {/* Delete Button Section */}
-        <div className="col-span-1 flex justify-end">
-          <button
-            onClick={() => setShowDeleteConfirm(true)} // Show confirmation modal on click
-            className="text-red-500 hover:text-red-700 text-xs p-1 opacity-0 group-hover:opacity-100 hover:bg-red-50 rounded-md transition-all"
-            aria-label="Delete task"
-            disabled={!canEditCore}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        {/* Messages Section */}
+        <div className="col-span-1 flex justify-center gap-2">
+          <button className="text-[#676879] hover:text-[#6161FF] transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+            </svg>
+          </button>
+          <button className="text-[#676879] hover:text-[#6161FF] transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
             </svg>
           </button>
         </div>
+        
+        {/* Empty column for spacing */}
+        <div className="col-span-1"></div>
       </div>
-
-      {/* Delete Confirmation Modal */}
+      
+      {/* ... (Your Modal JSX remains unchanged) ... */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Deletion</h3>
-            <p className="text-gray-700 mb-6">Are you sure you want to delete the task &quot;{task.title}&quot;? This action cannot be undone.</p>
-            <div className="flex justify-end gap-3">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full border border-[#E6E8F0]">
+            <div className="p-6 border-b border-[#E6E8F0]">
+              <h3 className="text-lg font-semibold text-[#323338] mb-2">Delete Task</h3>
+              <p className="text-[#676879] text-sm">
+                Are you sure you want to delete <span className="font-medium text-[#323338]">"{task.title}"</span>? 
+                This action cannot be undone.
+              </p>
+            </div>
+           
+            <div className="p-6 flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 text-[#676879] hover:text-[#323338] font-medium text-sm 
+                           hover:bg-[#F5F6FA] rounded-md transition-all duration-150"
               >
                 Cancel
               </button>
               <form action={handleDeleteTask} className="inline-block">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                  className="px-4 py-2 bg-[#E2445C] hover:bg-[#D13650] text-white font-medium text-sm 
+                             rounded-md transition-all duration-150"
                 >
-                  Delete
+                  Delete Task
                 </button>
               </form>
             </div>
