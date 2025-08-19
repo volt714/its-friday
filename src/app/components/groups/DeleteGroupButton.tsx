@@ -1,30 +1,41 @@
-import ConfirmSubmitButton from '@/app/components/common/ConfirmSubmitButton'
-import { deleteGroup } from '@/app/actions'
+import { deleteGroup } from '@/app/actions/groupActions';
+import ConfirmSubmitButton from '@/app/components/common/button/ConfirmSubmitButton';
+import { TrashIcon } from '@/app/components/common/Icon/TrashIcon';
+//import clsx from 'clsx';
 
-// DeleteGroupButton wraps a server action with a confirmation UX for safety
+interface DeleteGroupButtonProps {
+  groupId: number;
+  groupName: string;
+  className?: string;
+}
+
+/**
+ * A button that triggers a server action to delete a group,
+ * protected by a confirmation dialog for safety.
+ *
+ * @param {number} groupId - The ID of the group to be deleted.
+ * @param {string} groupName - The name of the group, used in the confirmation dialog.
+ * @param {string} [className] - Optional Tailwind classes to override or extend styles.
+ */
 export default function DeleteGroupButton({
   groupId,
   groupName,
   className,
-}: {
-  groupId: number
-  groupName: string
-  className?: string
-}) {
+}: DeleteGroupButtonProps) {
+  // Binding the action is a clean way to pass arguments to server actions.
+  const deleteGroupWithId = deleteGroup.bind(null, groupId);
+
+  const confirmMessage = `Are you sure you want to permanently delete the "${groupName}" group and all its tasks? This action cannot be undone.`;
+
   return (
-    <form
-      action={deleteGroup.bind(null, groupId)}
-    >
+    <form action={deleteGroupWithId}>
       <ConfirmSubmitButton
-        confirmMessage={`Are you sure you want to delete "${groupName}" group and all its tasks?`}
-        className={className ?? 'text-red-500 hover:text-red-700 text-xs p-1 hover:bg-red-50 rounded transition-colors'}
+        confirmMessage={confirmMessage}
+       // className={clsx(BASE_STYLES, className)}
+        aria-label={`Delete ${groupName} group`}
       >
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
+        <TrashIcon className="w-4 h-4" />
       </ConfirmSubmitButton>
     </form>
-  )
+  );
 }
-
-

@@ -1,7 +1,8 @@
 "use client"
 
 import React from "react"
-import { impersonateUserAction, signOutAction } from "@/app/actions"
+import { impersonateUserAction } from '@/app/actions/impersonationActions';
+import { signOutAction } from '@/app/actions/userActions';
 import { Menu } from "lucide-react"
 
 // SVG icon components
@@ -121,11 +122,11 @@ export default function TopNav({
           {/* Logo */}
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-md flex items-center justify-center shadow-sm">
-              <span className="text-white text-sm font-bold">m</span>
+              <span className="text-white text-sm font-bold">it's</span>
             </div>
             <div className="flex items-baseline gap-1 sm:gap-2">
-              <span className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">monday</span>
-              <span className="hidden sm:inline text-sm text-gray-600 font-medium">.com</span>
+              {/*<span className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">it's</span>*/}
+              <span className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">friday</span>
             </div>
           </div>
 

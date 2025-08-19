@@ -1,30 +1,26 @@
-'use client'
+import React from 'react';
 
-// AddTaskInput is a hidden input that can be toggled into view to quickly add text
-// It submits the parent form on Enter and hides itself when blurred with an empty value
+type AddTaskInputProps = {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+};
 
-export default function AddTaskInput({ id, name, placeholder }: { id: string; name: string; placeholder: string }) {
+export default function AddTaskInput({ value, onChange, onKeyDown }: AddTaskInputProps) {
   return (
     <input
-      id={id}
-      name={name}
-      placeholder={placeholder}
-      style={{ display: 'none' }}
-      className="border rounded px-3 py-1 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          // Prevent the browser's default submit to avoid double submissions
-          e.preventDefault()
-          e.currentTarget.form?.requestSubmit()
-        }
-      }}
-      onBlur={(e) => {
-        if (!e.currentTarget.value) {
-          e.currentTarget.style.display = 'none'
-        }
-      }}
+      name="title"
+      type="text"
+      value={value}
+      onChange={onChange}
+      onKeyDown={onKeyDown}
+      className="flex-1 bg-transparent border border-[#E6E9F2] rounded-[4px] px-3 py-2 text-[14px] text-[#323338] \
+                         placeholder-[#9699A6] focus:outline-none focus:ring-2 focus:ring-[#6161FF]/20 focus:border-[#6161FF]\
+                         transition-all duration-150"
+      placeholder="Enter task name..."
+      autoFocus
     />
-  )
+  );
 }
 
 

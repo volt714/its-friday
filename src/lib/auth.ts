@@ -1,3 +1,4 @@
+
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 
@@ -43,6 +44,10 @@ export function canManageUsers(actorRole: RoleString, targetRole?: RoleString): 
 
 export function canCreateOrDeleteEntities(actorRole: RoleString): boolean {
   return actorRole === 'DEVELOPER' || actorRole === 'ADMIN'
+}
+
+export function canAssignTask(actorRole: RoleString): boolean {
+  return actorRole === 'USER' || actorRole === 'ADMIN'
 }
 
 export function assert(condition: boolean, message: string): asserts condition {

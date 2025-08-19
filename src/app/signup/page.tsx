@@ -26,46 +26,61 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-gray-50">
-      <div className="bg-white p-6 rounded-lg shadow w-full max-w-sm">
-        <h1 className="text-xl font-semibold mb-4">Sign up</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md transform transition-all duration-300 hover:shadow-xl">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Create Account</h1>
         {error && (
-          <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2">
+          <div className="mb-4 text-sm text-red-700 bg-red-100 border border-red-300 rounded-md p-3">
             {decodeURIComponent(error)}
           </div>
         )}
-        <form action={handleSubmit} className="space-y-3">
+        <form action={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Username</label>
-            <input name="name" required autoComplete="username" className="w-full border rounded px-3 py-2 text-sm" placeholder="develop123" />
+            <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <input
+              name="name"
+              required
+              autoComplete="username"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 placeholder-gray-400"
+              placeholder="develop123"
+            />
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Password</label>
-            <input name="password" type="password" required autoComplete="new-password" className="w-full border rounded px-3 py-2 text-sm" placeholder="••••••" />
+            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <input
+              name="password"
+              type="password"
+              required
+              autoComplete="new-password"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 placeholder-gray-400"
+              placeholder="••••••"
+            />
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Role</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
             <select
               name="role"
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full border rounded px-3 py-2 text-sm"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
             >
               <option value="USER">User</option>
               <option value="ADMIN">Admin</option>
               <option value="DEVELOPER">Developer</option>
             </select>
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={isSubmitting}
-            className="w-full bg-blue-600 text-white rounded py-2 hover:bg-blue-700 disabled:bg-blue-400"
+            className="w-full bg-blue-600 text-white font-medium rounded-lg py-3 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Creating account...' : 'Sign up'}
+            {isSubmitting ? 'Creating account...' : 'Sign Up'}
           </button>
         </form>
-        <div className="mt-3 text-sm">
-          <Link className="text-blue-600 hover:underline" href="/login">Already have an account? Sign in</Link>
+        <div className="mt-6 text-sm text-center">
+          <Link className="text-blue-600 hover:underline font-medium" href="/login">
+            Already have an account? Sign In
+          </Link>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import ProjectHeader from '@/app/components/ProjectHeader'
 import ActionBar from '@/app/components/ActionBar'
 import GroupsBoard from '@/app/components/groups/GroupsBoard'
 import ChatWidget from '@/app/components/chat/ChatWidget'
+//import { GroupWithTasks, SimpleUser } from '@/app/components/common/types'
 
 // Home page fetches groups and users, then renders the main layout with navigation and the board
 export default async function Home() {
@@ -18,20 +19,25 @@ export default async function Home() {
   const groups = await (prisma as any).group.findMany({
     orderBy: { order: 'asc' },
     include: {
-      tasks: {
+      task: {
         orderBy: { id: 'asc' },
         where: me && me.role === 'USER'
           ? ({
               OR: [
                 { ownerId: me.id },
-                { assignees: { some: { userId: me.id } } },
+                { taskassignment: { some: { userId: me.id } } },
               ],
             } as any)
           : undefined,
-        include: ({ assignees: { select: { userId: true } } } as any),
+        include: { taskassignment: { select: { userId: true } } },
       },
     },
   })
+  // Map 'task' to 'tasks' for UI compatibility
+  const groupsWithTasks = groups.map((group: any) => ({
+    ...group,
+    tasks: group.task,
+  }))
   // Fetch a minimal list of users for owner selection (if the model exists)
   let users: { id: number; name: string }[] = []
   const userClient = (prisma as any).user
@@ -54,7 +60,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Sticky top navigation bar */}
-      <TopNav users={users} canImpersonate={me.role === 'DEVELOPER'} />
+     <TopNav users={users} canImpersonate={me.role === 'DEVELOPER'} /> 
       <div className="flex flex-1 overflow-hidden">
         {/* Collapsible sidebar */}
         <Sidebar />
@@ -65,7 +71,7 @@ export default async function Home() {
           {/* Scrollable board area */}
           <div className="flex-1 overflow-y-auto p-4 lg:p-6">
             {/* Kanban-like board of groups and tasks */}
-            <GroupsBoard groups={groups} users={users} canManage={me.role === 'ADMIN' || me.role === 'DEVELOPER'} />
+            <GroupsBoard groups={groupsWithTasks} users={users} canManage={me.role === 'ADMIN' || me.role === 'DEVELOPER'} />
           </div>
         </div>
       </div>

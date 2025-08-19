@@ -3,14 +3,16 @@
 // Importing React hooks: useMemo for memoized values, useState for state, useTransition for non-blocking updates, useRef for references, useEffect for side effects.
 import { useMemo, useState, useTransition, useRef, useEffect } from 'react'
 // Importing server actions: updateTask to update task details, createUserAction and deleteUserAction for user management.
-import { updateTask, createUserAction, deleteUserAction } from '@/app/actions'
+import { updateTask } from '@/app/actions/taskActions';
+import { createUserAction, deleteUserAction } from '@/app/actions/userActions';
 // Importing a utility to get badge color based on owner name.
-import { getOwnerBadgeColor } from '@/app/components/utils'
+import { SimpleUser } from '@/app/components/common/types';
 // Importing createPortal from React DOM for rendering popover in body.
 import { createPortal } from 'react-dom'
-
-// Defining SimpleUser type: Basic user with id and name.
-export type SimpleUser = { id: number; name: string }
+import OwnerSelect from '@/app/components/common/OwnerSelect';
+import UserAvatar from '@/app/components/common/UserAvatar';
+import ManageOwnersPopover from '@/app/components/common/ManageOwnersPopover';
+import PopoverToggleButton from '@/app/components/common/PopoverToggleButton';
 
 // Main component: OwnerField, for displaying and editing task owner, with avatar, dropdown, and manage button if allowed.
 export default function OwnerField({
@@ -28,6 +30,7 @@ export default function OwnerField({
   size?: 'sm' | 'md'
   canManageOwners?: boolean
 }) {
+  
   // useTransition: For handling updates without blocking UI, isPending shows loading state.
   const [isPending, startTransition] = useTransition()
   // State for toggling manage popover.
@@ -74,202 +77,49 @@ export default function OwnerField({
   return (
     <div className="flex items-center gap-3 relative">
       {/* Avatar: If name, colored circle with initial; else gray with user icon. */}
-      {currentName ? (
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-sm ${getOwnerBadgeColor(currentName)}`}>
-          {currentName.charAt(0).toUpperCase()}
-        </div>
-      ) : (
-        <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center">
-          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-        </div>
-      )}
+      <UserAvatar name={currentName} size={size} />
 
       {/* Owner dropdown: Select for choosing owner, updates task on change. */}
       <div className="flex-1 min-w-0">
-        <select
-          className={`w-full border border-gray-300 rounded-lg bg-white shadow-sm transition-all duration-200 
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-            hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed
-            disabled:bg-gray-50 ${sizeClasses} ${isPending ? 'cursor-wait' : 'cursor-pointer'}`}  // Dynamic classes for size and pending.
-          value={value}  // Current value from ownerId or 0.
-          onChange={(e) => {  // On change: Get selected, update task with transition.
-            const selectedId = Number(e.target.value)
-            const selectedUser = users.find((u) => u.id === selectedId)
+        <OwnerSelect
+          ownerId={ownerId}
+          ownerName={currentName}
+          users={users}
+          canEditCore={canManageOwners}
+          onOwnerChange={(selectedId, selectedName) => {
             startTransition(async () => {
               await updateTask(taskId, {
                 ownerId: selectedId || null,
-                owner: selectedUser?.name ?? null,
-                startDate: selectedId ? new Date().toISOString().slice(0, 10) : null,  // Sets startDate if assigning.
-              } as any)
-            })
+                owner: selectedName,
+                startDate: selectedId ? new Date().toISOString().slice(0, 10) : null,
+              } as any);
+            });
           }}
-          disabled={isPending || !canManageOwners}  // Disabled during update or if not allowed.
-        >
-          // Option for unassigned, shows 'Updating...' if pending.
-          <option value={0} className="text-gray-500">
-            {isPending ? 'Updating...' : 'Unassigned'}
-          </option>
-          // Options for each user.
-          {users.map((u) => (
-            <option key={u.id} value={u.id} className="text-gray-900">
-              {u.name}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       {/* Manage users button: Shown if canManageOwners, toggles popover. */}
       {canManageOwners && (
-        <button
-          ref={buttonRef}  // Ref for positioning.
-          type="button"
-          className="p-2 rounded-lg border border-gray-300 bg-white shadow-sm transition-all duration-200
-            hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 
-            focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Manage owners"
-          onClick={() => setOpen((v) => !v)}  // Toggles open.
+        <PopoverToggleButton
+          buttonRef={buttonRef}
+          onClick={() => setOpen((v) => !v)}
           disabled={!canManageOwners}
+          title="Manage owners"
         >
           // SVG users icon.
           <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
           </svg>
-        </button>
+        </PopoverToggleButton>
       )}
 
-      {/* Popover: If open and canManage, portal to body for overlay. */}
-      {open && canManageOwners && createPortal(
-        // Popover div: Fixed position, white bg, border, shadow.
-        <div className="absolute z-50 w-80 bg-white border border-gray-200 rounded-xl shadow-xl p-6" style={popoverStyle}>
-          {/* Header: Title and close button. */}
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-900 text-base">Manage Owners</h3>
-            <button 
-              className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors duration-200" 
-              onClick={() => setOpen(false)}  // Closes popover.
-              aria-label="Close"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Users list: Scrollable if many. */}
-          <div className="mb-6">
-            <div className="max-h-48 overflow-auto space-y-2">
-              // If no users, empty state.
-              {users.length === 0 ? (
-                <div className="text-center py-6 text-gray-500">
-                  <svg className="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  <p className="text-sm">No users yet</p>
-                </div>
-              ) : (
-                // Map users to list items with avatar, name, remove button.
-                users.map((u) => (
-                  <div key={u.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-150">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${getOwnerBadgeColor(u.name)}`}>
-                        {u.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-sm font-medium text-gray-900">{u.name}</span>
-                    </div>
-                    // Form for delete: Hidden input id, submit button.
-                    <form action={deleteUserAction}>
-                      <input type="hidden" name="id" value={u.id} />
-                      <button 
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-150" 
-                        type="submit"
-                      >
-                        Remove
-                      </button>
-                    </form>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Add user form: Border top, title, inputs. */}
-          <div className="border-t border-gray-100 pt-4">
-            <h4 className="font-medium text-gray-900 text-sm mb-3">Add New Owner</h4>
-            <form 
-              ref={formRef}  // Ref for reset.
-              action={async (formData: FormData) => {  // Async action: Create user, reset, reload on success; set error on fail.
-                try {
-                  setError(null)
-                  await createUserAction(formData)
-                  formRef.current?.reset()
-                  window.location.reload()
-                } catch (e) {
-                  setError(e instanceof Error ? e.message : 'Failed to create user')
-                }
-              }} 
-              className="space-y-3"
-            >
-              // Name input: Required.
-              <div>
-                <input 
-                  name="name" 
-                  placeholder="Full name" 
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm placeholder-gray-500
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                    transition-all duration-200" 
-                  required 
-                />
-              </div>
-              // Email input: Optional.
-              <div>
-                <input 
-                  name="email" 
-                  placeholder="Email (optional)" 
-                  type="email"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm placeholder-gray-500
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                    transition-all duration-200" 
-                />
-              </div>
-              
-              // Error display: If error, red alert with icon.
-              {error && (
-                <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 px-3 py-2 rounded-lg">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  {error}
-                </div>
-              )}
-              
-              // Buttons: Cancel and Add.
-              <div className="flex justify-end gap-2 pt-2">
-                <button 
-                  type="button" 
-                  onClick={() => setOpen(false)}  // Closes.
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg
-                    hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 
-                    transition-all duration-200"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg
-                    hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                    transition-all duration-200 shadow-sm"
-                >
-                  Add Owner
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>,
-        document.body  // Portals to body for overlay positioning.
-      )}
+      <ManageOwnersPopover
+        open={open}
+        onClose={() => setOpen(false)}
+        users={users}
+        buttonRef={buttonRef}
+      />
     </div>
   )
 }

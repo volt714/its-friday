@@ -1,5 +1,5 @@
-import { createGroup } from '@/app/actions'
-import ToggleInputButton from '@/app/components/common/ToggleInputButton'
+import { createGroup } from '@/app/actions/groupActions'
+import ToggleInputButton from '@/app/components/common/button/ToggleInputButton'
 import AddTaskInput from '@/app/components/common/AddTaskInput'
 
 // AddNewGroupCard shows an inline control to create a new group
@@ -9,7 +9,6 @@ export default function AddNewGroupCard() {
       <div className="p-6 text-center">
         <form
           action={async (formData: FormData) => {
-            'use server'
             const name = String(formData.get('name') || 'New Group')
             await createGroup(name)
           }}
