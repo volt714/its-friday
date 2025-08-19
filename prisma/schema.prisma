@@ -38,8 +38,8 @@ model Task {
   ownerId   Int?    // FK to User
   ownerUser User?   @relation("UserTasks", fields: [ownerId], references: [id])
   status    Status   @default(NOT_STARTED)
-  startDate DateTime? // Date when task was assigned to someone
   dueDate   DateTime?
+  assignedAt DateTime?
   dropdown  String?
   groupId   Int
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)

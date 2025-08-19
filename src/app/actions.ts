@@ -6,27 +6,19 @@ import { getCurrentUser, canCreateOrDeleteEntities, canManageUsers, USER_EDITABL
 import crypto from 'crypto'
 
 // Server-side actions for creating, updating, and deleting groups, tasks, and users
-export async function createGroup(name: string) {
-  const me = await getCurrentUser()
-  assert(!!me && canCreateOrDeleteEntities(me.role), 'Not authorized')
-  await prisma.group.create({ data: { name } })
-  revalidatePath('/')
-}
-
 export async function createTask(params: {
   groupId: number
   title: string
   owner?: string | null
   ownerId?: number | null
   status?: 'WORKING_ON_IT' | 'DONE' | 'NOT_STARTED' | 'STUCK'
-  startDate?: string | null
   dueDate?: string | null
   dropdown?: string | null
   assigneeIds?: number[] | null
 }) {
   const me = await getCurrentUser()
   assert(!!me && canCreateOrDeleteEntities(me.role), 'Not authorized')
-  const { groupId, title, owner, ownerId, status, startDate, dueDate, dropdown, assigneeIds } = params
+  const { groupId, title, owner, ownerId, status, dueDate, dropdown, assigneeIds } = params
   await prisma.task.create({
     data: {
       groupId,
@@ -34,7 +26,6 @@ export async function createTask(params: {
       owner: owner ?? undefined,
       ...(ownerId !== null && ownerId !== undefined ? { ownerId } : {}),
       status: (status as any) ?? 'NOT_STARTED',
-      startDate: startDate ? new Date(startDate) : undefined,
       dueDate: dueDate ? new Date(dueDate) : undefined,
       dropdown: dropdown ?? undefined,
       ...(assigneeIds && assigneeIds.length
@@ -52,7 +43,6 @@ export async function updateTask(
     owner: string | null
     ownerId: number | null
     status: 'WORKING_ON_IT' | 'DONE' | 'NOT_STARTED' | 'STUCK'
-    startDate: string | null
     dueDate: string | null
     dropdown: string | null
     groupId: number
@@ -71,12 +61,13 @@ export async function updateTask(
     }
   }
 
+  const ownerIdProvided = Object.prototype.hasOwnProperty.call(sanitized, 'ownerId')
   await prisma.task.update({
     where: { id },
     data: {
       ...sanitized,
-      startDate: sanitized.startDate ? new Date(sanitized.startDate) : undefined,
       dueDate: sanitized.dueDate ? new Date(sanitized.dueDate) : undefined,
+      assignedAt: ownerIdProvided ? (sanitized.ownerId == null ? null : new Date()) : undefined,
       ...(Array.isArray(sanitized.assigneeIds)
         ? {
             assignees: {
@@ -95,6 +86,59 @@ export async function deleteTask(id: number) {
   assert(!!me && canCreateOrDeleteEntities(me.role), 'Not authorized')
   await prisma.task.delete({ where: { id } })
   revalidatePath('/')
+}
+
+// Assign or unassign task owner (Admin/Developer only)
+export async function assignTaskOwner(taskId: number, userId: number) {
+  'use server'
+  const me = await getCurrentUser()
+  assert(!!me && canCreateOrDeleteEntities(me.role), 'Not authorized')
+  await updateTask(taskId, { ownerId: userId })
+  revalidatePath('/users')
+}
+
+export async function unassignTaskOwner(taskId: number) {
+  'use server'
+  const me = await getCurrentUser()
+  assert(!!me && canCreateOrDeleteEntities(me.role), 'Not authorized')
+  await updateTask(taskId, { ownerId: null })
+  revalidatePath('/users')
+}
+
+// Form actions for assignment
+export async function assignTaskOwnerAction(formData: FormData) {
+  'use server'
+  const taskId = Number(formData.get('taskId'))
+  const userId = Number(formData.get('userId'))
+  if (!Number.isNaN(taskId) && !Number.isNaN(userId)) {
+    await assignTaskOwner(taskId, userId)
+  }
+}
+
+export async function unassignTaskOwnerAction(formData: FormData) {
+  'use server'
+  const taskId = Number(formData.get('taskId'))
+  if (!Number.isNaN(taskId)) {
+    await unassignTaskOwner(taskId)
+  }
+}
+
+// Form action: update limited task fields (status/dueDate/dropdown)
+export async function updateTaskFieldsAction(formData: FormData) {
+  'use server'
+  const id = Number(formData.get('taskId'))
+  const status = String(formData.get('status') || '') as any
+  const dueDate = String(formData.get('dueDate') || '')
+  const dropdown = String(formData.get('dropdown') || '')
+  if (Number.isNaN(id)) return
+  const fields: any = {}
+  if (status === 'WORKING_ON_IT' || status === 'DONE' || status === 'NOT_STARTED' || status === 'STUCK') {
+    fields.status = status
+  }
+  if (dueDate) fields.dueDate = dueDate
+  if (dropdown) fields.dropdown = dropdown
+  await updateTask(id, fields)
+  revalidatePath('/users')
 }
 
 export async function deleteGroup(id: number) {
@@ -332,6 +376,16 @@ export async function listTaskMessages(taskId: number) {
     orderBy: { createdAt: 'asc' },
   })
   return messages
+}
+
+// Task summary for UI panels
+export async function getTaskSummary(taskId: number) {
+  'use server'
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: { id: true, title: true, assignedAt: true, ownerUser: { select: { name: true } } },
+  })
+  return task
 }
 
 // Sign out: clear uid cookie and go to login

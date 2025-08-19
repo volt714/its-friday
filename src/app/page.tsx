@@ -8,6 +8,7 @@ import ProjectHeader from '@/app/components/ProjectHeader'
 import ActionBar from '@/app/components/ActionBar'
 import GroupsBoard from '@/app/components/groups/GroupsBoard'
 import ChatWidget from '@/app/components/chat/ChatWidget'
+//import { GroupWithTasks, SimpleUser } from '@/app/components/common/types'
 
 // Home page fetches groups and users, then renders the main layout with navigation and the board
 export default async function Home() {
@@ -54,7 +55,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Sticky top navigation bar */}
-      <TopNav users={users} canImpersonate={me.role === 'DEVELOPER'} />
+     <TopNav users={users} canImpersonate={me.role === 'DEVELOPER'} /> 
       <div className="flex flex-1 overflow-hidden">
         {/* Collapsible sidebar */}
         <Sidebar />
