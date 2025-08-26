@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { createUserAction } from '../actions'
+import { createUserAction } from '@/app/actions/userActions'
 import Link from 'next/link'
 
 export default function SignupPage() {

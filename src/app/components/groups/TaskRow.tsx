@@ -10,10 +10,9 @@ import { getDueDateTone } from '@/app/components/common/DateInput';
 import React from 'react'; // Explicitly import React for JSX transformation
 import DateInput from '@/app/components/common/DateInput';
 import OwnerSelect from '@/app/components/common/OwnerSelect';
-import MessageToggleButton from '@/app/components/common/button/MessageToggleButton';
-import StarButton from '@/app/components/common/button/StarButton';
+import CombinedButton from '@/app/components/common/button/combinedbutton';
 import StatusSelect from '@/app/components/common/StatusSelect';
-import DeleteTaskButton from '@/app/components/common/button/DeleteTaskButton';
+import DeleteTaskButton from '@/app/components/common/task form/DeleteTaskButton';
 import { useRouter } from 'next/navigation';
 import TaskTitleInput from '@/app/components/common/TaskTitleInput';
 import { TaskLite, getDropdownTone } from '@/app/components/common/TaskDropdown';
@@ -82,9 +81,10 @@ export default function TaskRow({
             onTitleUpdate={setCurrentTitle}
           />
           
-          <StarButton />
+          <CombinedButton variant='star' />
 
-          <MessageToggleButton
+          <CombinedButton
+            variant='messageToggle'
             taskId={task.id}
             onMessagesToggle={onMessagesToggle!}
             messageCount={task.messageCount}

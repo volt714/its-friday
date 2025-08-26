@@ -11,7 +11,7 @@ import type { Status } from '@/app/components/common/StatusSelect'
 import DeleteGroupButton from './DeleteGroupButton'
 import TaskRow from './TaskRow'
 import MessagesPanel from '@/app/components/chat/MessagesPanel'
-import AddTaskForm from '@/app/components/common/AddTaskForm';
+import AddTaskForm from '@/app/components/common/task form/AddTaskForm';
 import { useRouter } from 'next/navigation';
 import { updateTask } from '@/app/actions/taskActions';
 import { TaskLite } from '@/app/components/common/TaskDropdown';

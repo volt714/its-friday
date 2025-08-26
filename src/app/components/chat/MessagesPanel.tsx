@@ -4,12 +4,12 @@ import { useState, useEffect, useRef, useTransition } from 'react';
 import { addTaskMessage, listTaskMessages } from '@/app/actions/messageActions';
 import { getTaskSummary } from '@/app/actions/taskActions';
 import { Message } from '@/app/components/chat/types';
-import { formatDate } from '@/app/utils/date';
-import { getInitials } from '@/app/utils/user';
+import { formatDate } from './MessageItem';
+import { getInitials } from './MessageItem';
 import EmptyStateMessage from '@/app/components/common/EmptyStateMessage';
 import MessageItem from '@/app/components/chat/MessageItem';
 import InputToolbar from '@/app/components/chat/InputToolbar';
-import ConfirmSubmitButton from '@/app/components/common/button/ConfirmSubmitButton';
+import CombinedButton from '@/app/components/common/button/combinedbutton';
 
 interface MessagesPanelProps {
   taskId: number;
@@ -37,7 +37,7 @@ export default function MessagesPanel({
         const msgs = await listTaskMessages(taskId);
         setHistory(msgs as Message[]);
         const task = await getTaskSummary(taskId);
-        setSummary(task ? { title: task.title, assignedAt: task.assignedAt as any, ownerName: task.ownerUser?.name } : null);
+        setSummary(task ? { title: task.title, assignedAt: task.assignedAt as any, ownerName: task.user?.name } : null);
       } catch (error) {
         console.error('Failed to fetch messages:', error);
       }
@@ -115,9 +115,7 @@ export default function MessagesPanel({
               </svg>
               <h3 className="font-medium text-gray-900 text-sm truncate">{summary?.title ?? 'Message'}</h3>
             </div>
-            {summary?.assignedAt && (
-              <div className="mt-1 text-xs text-gray-500">Assigned {new Date(summary.assignedAt).toLocaleDateString()} {summary.ownerName ? `to ${summary.ownerName}` : ''}</div>
-            )}
+            
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
@@ -217,7 +215,8 @@ export default function MessagesPanel({
                   <div className="flex items-center justify-between mt-2">
                     {renderInputToolbar()}
                     
-                    <ConfirmSubmitButton
+                    <CombinedButton
+                      variant='confirmSubmit'
                       onClick={sendMessage}
                       isLoading={isPending}
                       disabled={!text.trim()}
@@ -226,7 +225,7 @@ export default function MessagesPanel({
                         disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                     >
                       Update
-                    </ConfirmSubmitButton>
+                    </CombinedButton>
                   </div>
                 </div>
               </div>

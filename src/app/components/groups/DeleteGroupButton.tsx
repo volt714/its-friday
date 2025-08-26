@@ -1,5 +1,5 @@
 import { deleteGroup } from '@/app/actions/groupActions';
-import ConfirmSubmitButton from '@/app/components/common/button/ConfirmSubmitButton';
+import CombinedButton from '@/app/components/common/button/combinedbutton';
 import { TrashIcon } from '@/app/components/common/Icon/TrashIcon';
 //import clsx from 'clsx';
 
@@ -29,13 +29,14 @@ export default function DeleteGroupButton({
 
   return (
     <form action={deleteGroupWithId}>
-      <ConfirmSubmitButton
+      <CombinedButton
+        variant='confirmSubmit'
         confirmMessage={confirmMessage}
        // className={clsx(BASE_STYLES, className)}
         aria-label={`Delete ${groupName} group`}
       >
         <TrashIcon className="w-4 h-4" />
-      </ConfirmSubmitButton>
+      </CombinedButton>
     </form>
   );
 }

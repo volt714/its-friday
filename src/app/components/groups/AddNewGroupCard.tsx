@@ -1,6 +1,6 @@
 import { createGroup } from '@/app/actions/groupActions'
-import ToggleInputButton from '@/app/components/common/button/ToggleInputButton'
-import AddTaskInput from '@/app/components/common/AddTaskInput'
+import CombinedButton from '@/app/components/common/button/combinedbutton';
+import AddTaskInput from '@/app/components/common/task form/AddTaskInput'
 
 // AddNewGroupCard shows an inline control to create a new group
 export default function AddNewGroupCard() {
@@ -15,12 +15,12 @@ export default function AddNewGroupCard() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           {/* Toggle input visibility and submit via Enter */}
-          <ToggleInputButton targetId="new-group-name" className="text-gray-400 hover:text-gray-600 flex items-center gap-2 transition-colors">
+          <CombinedButton variant='toggleInput' targetId="new-group-name" className="text-gray-400 hover:text-gray-600 flex items-center gap-2 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             <span className="font-medium">Add new group</span>
-          </ToggleInputButton>
+          </CombinedButton>
           <AddTaskInput id="new-group-name" name="name" placeholder="Enter group name" />
         </form>
       </div>

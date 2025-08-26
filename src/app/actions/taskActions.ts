@@ -145,7 +145,7 @@ export async function getTaskSummary(taskId: number) {
   'use server'
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    select: { id: true, title: true, assignedAt: true, user: { select: { name: true } } },
+    select: { id: true, title: true },
   })
   return task
 }

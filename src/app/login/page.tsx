@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
-export default function LoginPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
+export default function LoginPage({ searchParams }: { searchParams: any }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md transform transition-all duration-300 hover:shadow-xl">
